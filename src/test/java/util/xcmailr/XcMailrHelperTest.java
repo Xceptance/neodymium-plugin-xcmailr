@@ -2,8 +2,6 @@ package util.xcmailr;
 
 import static com.codeborne.selenide.Selenide.$;
 
-import java.io.IOException;
-
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +9,7 @@ import org.junit.runner.RunWith;
 import com.xceptance.neodymium.NeodymiumRunner;
 import com.xceptance.neodymium.module.statement.browser.multibrowser.Browser;
 
-import gherkin.deps.net.iharder.Base64;
+import util.xcmailr.util.Base64Decoder;
 
 @RunWith(NeodymiumRunner.class)
 public class XcMailrHelperTest extends AbstractTest
@@ -30,29 +28,28 @@ public class XcMailrHelperTest extends AbstractTest
                               + "'textContent':'" + textBase64 + "'}]";
 
     @Test
-    public void testGetFirstMailsTextContent() throws IOException
+    public void testGetFirstMailsTextContent()
     {
-        String text = new String(Base64.decode(textBase64));
+        String text = Base64Decoder.decode(textBase64);
 
         Assert.assertEquals(text, XcMailrHelper.getFirstMailsTextContent(response));
     }
 
     @Test
-    public void testGetFirstMailsHmlContent() throws IOException
+    public void testGetFirstMailsHmlContent()
     {
-        String textHtml = new String(Base64.decode(textHtmlBase64));
+        String textHtml = Base64Decoder.decode(textHtmlBase64);
 
         Assert.assertEquals(textHtml, XcMailrHelper.getFirstMailsHtmlContent(response));
     }
 
     @Browser("Chrome_headless")
     @Test
-    public void testOpenHtmlContentWithCurrentWebDriver() throws IOException
+    public void testOpenHtmlContentWithCurrentWebDriver()
     {
-        String textHtml = new String(Base64.decode(textHtmlBase64));
+        String textHtml = Base64Decoder.decode(textHtmlBase64);
 
-        char cr = 13;
-        String expectedText = (new String(Base64.decode(textBase64))).replaceAll(String.valueOf(cr), "");
+        String expectedText = Base64Decoder.decode(textBase64);
 
         XcMailrHelper.openHtmlContentWithCurrentWebDriver(textHtml);
 

@@ -25,7 +25,7 @@ public class XcMailrApi
     public final static String TEMPORARY_CONFIG_FILE_PROPERTY_NAME = "xcmailr.temporaryConfigFile";
 
     /**
-     * Retrieves the instance of applitools configuration for the current thread.
+     * Retrieves the instance of xcmailr configuration for the current thread.
      * 
      * @return the configuration instance for the current thread
      */

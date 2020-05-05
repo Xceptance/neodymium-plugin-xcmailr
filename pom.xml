@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.xceptance</groupId>
-    <artifactId>neodymium-plugin-xcmailr</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
-    <packaging>jar</packaging>
+	<groupId>com.xceptance</groupId>
+	<artifactId>neodymium-plugin-xcmailr</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
 	<name>neodymium-plugin-xcmailr</name>
 	<url>https://github.com/Xceptance/neodymium-plugin-xcmailr</url>
@@ -21,7 +23,7 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
-	
+
 	<distributionManagement>
 		<snapshotRepository>
 			<id>ossrh</id>
@@ -108,8 +110,13 @@
 			</plugin>
 		</plugins>
 	</build>
-	
-		<dependencies>
+
+	<dependencies>
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.6.2</version>
+		</dependency>
 		<dependency>
 			<groupId>com.xceptance</groupId>
 			<artifactId>neodymium-library</artifactId>
