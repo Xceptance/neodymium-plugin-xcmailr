@@ -1,0 +1,29 @@
+name: Java CI
+
+on:
+  push:
+    branches:
+      - develop
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK 1.8
+      uses: actions/setup-java@v1
+      with:
+        java-version: 1.8
+    - name: run basic tests
+      env:
+        XCMAILR_EMAIL: ${{ secrets.XCMAILR_EMAIL }}
+        XCMAILR_PASSWORD: ${{ secrets.XCMAILR_PASSWORD }}
+        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
+      run: mvn -B clean test allure:report
+    - uses: actions/upload-artifact@v1
+      with:
+          name: allure-report-basic
+          path: target/site
