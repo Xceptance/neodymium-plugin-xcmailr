@@ -2,6 +2,7 @@ package util.xcmailr;
 
 import static com.codeborne.selenide.Selenide.$;
 
+import org.aeonbits.owner.util.Base64;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,7 +31,7 @@ public class XcMailrHelperTest extends AbstractTest
     @Test
     public void testGetFirstMailsTextContent()
     {
-        String text = Base64Decoder.decode(textBase64);
+        String text = new String(Base64.decode(textBase64));
 
         Assert.assertEquals(text, XcMailrHelper.getFirstMailsTextContent(response));
     }
@@ -38,7 +39,7 @@ public class XcMailrHelperTest extends AbstractTest
     @Test
     public void testGetFirstMailsHmlContent()
     {
-        String textHtml = Base64Decoder.decode(textHtmlBase64);
+        String textHtml = new String(Base64.decode(textHtmlBase64));
 
         Assert.assertEquals(textHtml, XcMailrHelper.getFirstMailsHtmlContent(response));
     }
