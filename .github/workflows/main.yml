@@ -22,7 +22,7 @@ jobs:
         XCMAILR_PASSWORD: ${{ secrets.XCMAILR_PASSWORD }}
         EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
         XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
-      run: mvn -B clean test allure:rerport
+      run: mvn -B clean test allure:report
     - uses: actions/upload-artifact@v1
       with:
           name: allure-report-basic
