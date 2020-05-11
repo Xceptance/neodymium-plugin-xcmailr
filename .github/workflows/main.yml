@@ -1,9 +1,9 @@
-name: Deployment
+name: Java CI
 
 on:
   push:
     branches:
-      - master
+      - develop
 
 jobs:
   build:
@@ -16,11 +16,7 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.8
-    - name: Customize Maven repo settings
-      run: cp .github/workflows/settings.xml ~/.m2
-    - name: Install GPG key  
-      run: echo "${{ secrets.GPG_KEY }}" | gpg --batch --import
-    - name: Deploy
+    - name: run basic tests
       env:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -32,4 +28,8 @@ jobs:
         EMAIL: ${{ secrets.EMAIL }}
         EMAIL_SERVER: ${{ secrets.EMAIL_SERVER}}
         XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
-      run: mvn -B deploy
+      run: mvn -B clean test allure:report
+    - uses: actions/upload-artifact@v1
+      with:
+          name: allure-report-basic
+          path: target/site
