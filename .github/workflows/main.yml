@@ -28,5 +28,8 @@ jobs:
         XCMAILR_EMAIL: ${{ secrets.XCMAILR_EMAIL }}
         XCMAILR_PASSWORD: ${{ secrets.XCMAILR_PASSWORD }}
         EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+        EMAIL_LOGIN: ${{ secrets.EMAIL_LOGIN }}
+        EMAIL: ${{ secrets.EMAIL }}
+        EMAIL_SERVER: ${{ secrets.EMAIL_SERVER}}
         XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
       run: mvn -B deploy
