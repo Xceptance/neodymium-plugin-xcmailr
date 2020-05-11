@@ -4,6 +4,8 @@ public class EmailAccount
 {
     private String email;
 
+    private String login;
+
     private String password;
 
     private String server;
@@ -21,11 +23,33 @@ public class EmailAccount
     public EmailAccount(String email, String password, String server, int port, boolean ssl, boolean tls)
     {
         this.email = email;
+        this.login = email;
         this.password = password;
         this.server = server;
         this.port = port;
         this.ssl = ssl;
         this.tls = tls;
+    }
+
+    public EmailAccount(String email, String login, String password, String server, int port, boolean ssl, boolean tls)
+    {
+        this.email = email;
+        this.login = login;
+        this.password = password;
+        this.server = server;
+        this.port = port;
+        this.ssl = ssl;
+        this.tls = tls;
+    }
+
+    public String getLogin()
+    {
+        return login;
+    }
+
+    public void setLogin(String login)
+    {
+        this.login = login;
     }
 
     public String getEmail()
@@ -91,6 +115,7 @@ public class EmailAccount
     @Override
     public String toString()
     {
-        return "EmailAccount [email=" + email + ", password=" + password + ", server=" + server + ", port=" + port + ", ssl=" + ssl + ", tls=" + tls + "]";
+        return "EmailAccount [email=" + email + ", login=" + login + ", password=" + password + ", server=" + server + ", port=" + port + ", ssl=" + ssl
+               + ", tls=" + tls + "]";
     }
 }
