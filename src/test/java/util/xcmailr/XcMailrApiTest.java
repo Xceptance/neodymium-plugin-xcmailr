@@ -96,8 +96,6 @@ public class XcMailrApiTest extends AbstractTest
     @Test
     public void testEmailExpired()
     {
-        final String xcmailrEmail = System.getenv("XCMAILR_EMAIL") != null ? System.getenv("XCMAILR_EMAIL") : "";
-        final String xcmailrPassword = System.getenv("XCMAILR_PASSWORD") != null ? System.getenv("XCMAILR_PASSWORD") : "";
         XcMailrApi.createTemporaryEmail(tempEmail);
         XcmailrOverviewPage mailOverview = new XcmailrLoginPage().login(xcmailrEmail, xcmailrPassword).openMailOverview();
         mailOverview.validateEmailIsActive(tempEmail);
