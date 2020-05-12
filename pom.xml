@@ -109,7 +109,37 @@
 			</plugin>
 		</plugins>
 	</build>
-
+	<profiles>
+		<profile>
+			<id>basic</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<parallel>classes</parallel>
+							<threadCount>2</threadCount>
+							<includes>
+								<include>util.xcmailr/**/*Test.java
+								</include>
+							</includes>
+							<properties>
+								<property>
+									<name>listener</name>
+									<value>io.qameta.allure.junit4.AllureJunit4
+									</value>
+								</property>
+							</properties>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 	<dependencies>
 		<dependency>
 			<groupId>com.sun.mail</groupId>
