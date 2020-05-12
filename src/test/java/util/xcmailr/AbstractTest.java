@@ -22,7 +22,7 @@ public abstract class AbstractTest
 
     protected Map<String, String> properties2 = new HashMap<>();
 
-    protected final String fileLocation = "config/temp-applitools.properties";
+    protected final String fileLocation = "config/temp-xcmailr.properties";
 
     protected File tempConfigFile2 = new File("./" + fileLocation);
 
