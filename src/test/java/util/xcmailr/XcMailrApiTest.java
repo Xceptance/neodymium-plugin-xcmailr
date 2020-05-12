@@ -29,15 +29,17 @@ import com.google.common.collect.Maps;
 import com.xceptance.neodymium.NeodymiumRunner;
 import com.xceptance.neodymium.module.statement.browser.multibrowser.Browser;
 import com.xceptance.neodymium.module.statement.browser.multibrowser.SuppressBrowsers;
-import com.xceptance.neodymium.util.Neodymium;
 
-import gherkin.deps.com.google.gson.JsonObject;
-import gherkin.deps.com.google.gson.JsonParser;
+import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
+import net.minidev.json.parser.ParseException;
 import util.xcmailr.data.EmailAccount;
 import util.xcmailr.data.SmtpAuthenticator;
 import util.xcmailr.pageobjects.XcmailrLoginPage;
 import util.xcmailr.pageobjects.XcmailrOverviewPage;
 import util.xcmailr.util.Base64Decoder;
+import util.xcmailr.util.SendRequest;
 
 @Browser("Chrome_headless")
 @RunWith(NeodymiumRunner.class)
@@ -77,7 +79,8 @@ public class XcMailrApiTest extends AbstractTest
     @After
     public void deleteTempEmail() throws ClientProtocolException, IOException
     {
-        new XcmailrLoginPage().login(xcmailrEmail, xcmailrPassword).openMailOverview().deleteTempEmail(tempEmail);
+        SendRequest.login(xcmailrEmail, xcmailrPassword);
+        SendRequest.deleteTempEmail(tempEmail);
     }
 
     @Test
@@ -93,8 +96,8 @@ public class XcMailrApiTest extends AbstractTest
     @Test
     public void testEmailExpired()
     {
-        final String xcmailrEmail = System.getenv("XCMAILR_EMAIL") != null ? System.getenv("XCMAILR_EMAIL") : "o.omelianchuk@xceptance.net";
-        final String xcmailrPassword = System.getenv("XCMAILR_PASSWORD") != null ? System.getenv("XCMAILR_PASSWORD") : "parolXcmailr2020";
+        final String xcmailrEmail = System.getenv("XCMAILR_EMAIL") != null ? System.getenv("XCMAILR_EMAIL") : "";
+        final String xcmailrPassword = System.getenv("XCMAILR_PASSWORD") != null ? System.getenv("XCMAILR_PASSWORD") : "";
         XcMailrApi.createTemporaryEmail(tempEmail);
         XcmailrOverviewPage mailOverview = new XcmailrLoginPage().login(xcmailrEmail, xcmailrPassword).openMailOverview();
         mailOverview.validateEmailIsActive(tempEmail);
@@ -106,17 +109,14 @@ public class XcMailrApiTest extends AbstractTest
 
     @SuppressBrowsers
     @Test
-    public void testRetrieveLastEmailBySubject() throws MessagingException
+    public void testRetrieveLastEmailBySubject() throws MessagingException, ParseException
     {
         final String subject = "Test";
         final String textToSend = "Hi\nHow are you?)\nBye";
         XcMailrApi.createTemporaryEmail(tempEmail);
         send(emailAccount, tempEmail, subject, textToSend);
-        System.out.println(XcMailrApi.retrieveLastEmailBySubject(tempEmail,
-                                                                 subject));
-        JsonObject response = (JsonObject) new JsonParser().parse(XcMailrApi.retrieveLastEmailBySubject(tempEmail,
-                                                                                                        subject))
-                                                           .getAsJsonArray().get(0);
+        JSONObject response = (JSONObject) ((JSONArray) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(XcMailrApi.retrieveLastEmailBySubject(tempEmail,
+                                                                                                                                                subject))).get(0);
         Assert.assertEquals(response.get("mailAddress").toString().replaceAll("\"", ""), tempEmail);
         Assert.assertEquals(response.get("sender").toString().replaceAll("\"", ""), emailAccount.getEmail());
         Assert.assertEquals(response.get("subject").toString().replaceAll("\"", ""), subject);
@@ -124,7 +124,6 @@ public class XcMailrApiTest extends AbstractTest
                             textToSend);
         Assert.assertEquals(Base64Decoder.decode(response.get("textContent").toString().replaceAll("\"", "")),
                             textToSend);
-        Neodymium.setBrowserName("Chrome_headless");
     }
 
     /**
@@ -178,7 +177,6 @@ public class XcMailrApiTest extends AbstractTest
         }
         catch (MessagingException e)
         {
-            System.out.println(e.getMessage());
             e.printStackTrace();
         }
     }
