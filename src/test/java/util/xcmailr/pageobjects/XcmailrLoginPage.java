@@ -12,6 +12,7 @@ public class XcmailrLoginPage
 {
     public XcmailrLoginPage login(String email, String password)
     {
+        // TODO put url in a local variable and reuse it
         Selenide.open(ConfigFactory.create(XcMailrConfiguration.class).url());
         Selenide.clearBrowserCookies();
         Selenide.open(ConfigFactory.create(XcMailrConfiguration.class).url());

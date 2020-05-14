@@ -43,10 +43,14 @@ import util.xcmailr.util.SendRequest;
 
 @Browser("Chrome_headless")
 @RunWith(NeodymiumRunner.class)
+// TODO make runnable locally without the need to write in the environment
+// FIXME Get the environment once and perform lookup on the map to set values
 public class XcMailrApiTest extends AbstractTest
 {
+    // FIXME unused -> remove
     Map<String, String> headers = Maps.newHashMap();
 
+    // FIXME unused -> remove
     Map<String, String> formParams = Maps.newHashMap();
 
     private final String xcmailrEmail = System.getenv("XCMAILR_EMAIL") != null ? System.getenv("XCMAILR_EMAIL") : "";
@@ -57,11 +61,15 @@ public class XcMailrApiTest extends AbstractTest
 
     private final int validMinutes = 3;
 
-    private static final EmailAccount emailAccount = new EmailAccount(System.getenv("EMAIL") != null ? System.getenv("EMAIL")
-                                                                                                     : "", System.getenv("EMAIL_LOGIN") != null ? System.getenv("EMAIL_LOGIN")
-                                                                                                                                                : "", System.getenv("EMAIL_PASSWORD") != null ? System.getenv("EMAIL_PASSWORD")
-                                                                                                                                                                                              : "", System.getenv("EMAIL_SERVER") != null ? System.getenv("EMAIL_SERVER")
-                                                                                                                                                                                                                                          : "", 25, false, true);
+    // TODO only used once, move in method?
+    private static final EmailAccount emailAccount = new EmailAccount(System.getenv("EMAIL") != null ? System.getenv("EMAIL") : "",
+                                                                      System.getenv("EMAIL_LOGIN") != null ? System.getenv("EMAIL_LOGIN")
+                                                                                                           : "",
+                                                                      System.getenv("EMAIL_PASSWORD") != null ? System.getenv("EMAIL_PASSWORD")
+                                                                                                              : "",
+                                                                      System.getenv("EMAIL_SERVER") != null ? System.getenv("EMAIL_SERVER")
+                                                                                                            : "",
+                                                                      25, false, true);
 
     @Before
     public void configureApiToken()
@@ -88,17 +96,17 @@ public class XcMailrApiTest extends AbstractTest
     {
         XcMailrApi.createTemporaryEmail(tempEmail);
 
-        new XcmailrLoginPage().login(xcmailrEmail,
-                                     xcmailrPassword)
-                              .openMailOverview().validateEmailCreated(tempEmail);
+        new XcmailrLoginPage().login(xcmailrEmail, xcmailrPassword).openMailOverview().validateEmailCreated(tempEmail);
     }
 
     @Test
+    // TODO use minimal validity period
     public void testEmailExpired()
     {
         XcMailrApi.createTemporaryEmail(tempEmail);
-        XcmailrOverviewPage mailOverview = new XcmailrLoginPage().login(xcmailrEmail, xcmailrPassword).openMailOverview();
+        final XcmailrOverviewPage mailOverview = new XcmailrLoginPage().login(xcmailrEmail, xcmailrPassword).openMailOverview();
         mailOverview.validateEmailIsActive(tempEmail);
+        // FIXME remove additional minute of wait. We already know that the email is active, so the timer is already on
         Selenide.sleep((validMinutes + 1) * 60000);
         Selenide.refresh();
         Selenide.sleep(1000);
@@ -113,15 +121,13 @@ public class XcMailrApiTest extends AbstractTest
         final String textToSend = "Hi\nHow are you?)\nBye";
         XcMailrApi.createTemporaryEmail(tempEmail);
         send(emailAccount, tempEmail, subject, textToSend);
-        JSONObject response = (JSONObject) ((JSONArray) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(XcMailrApi.retrieveLastEmailBySubject(tempEmail,
-                                                                                                                                                subject))).get(0);
+        final JSONObject response = (JSONObject) ((JSONArray) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(XcMailrApi.retrieveLastEmailBySubject(tempEmail,
+                                                                                                                                                      subject))).get(0);
         Assert.assertEquals(response.get("mailAddress").toString().replaceAll("\"", ""), tempEmail);
         Assert.assertEquals(response.get("sender").toString().replaceAll("\"", ""), emailAccount.getEmail());
         Assert.assertEquals(response.get("subject").toString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(Base64Decoder.decode(response.get("htmlContent").toString().replaceAll("\"", "")),
-                            textToSend);
-        Assert.assertEquals(Base64Decoder.decode(response.get("textContent").toString().replaceAll("\"", "")),
-                            textToSend);
+        Assert.assertEquals(Base64Decoder.decode(response.get("htmlContent").toString().replaceAll("\"", "")), textToSend);
+        Assert.assertEquals(Base64Decoder.decode(response.get("textContent").toString().replaceAll("\"", "")), textToSend);
     }
 
     /**
@@ -133,9 +139,10 @@ public class XcMailrApiTest extends AbstractTest
      *            message text
      * @throws MessagingException
      */
+    // TODO this should be a static method
     public void send(EmailAccount emailAccount, String recipent, String subject, String text)
     {
-        Properties smtpProps = new Properties();
+        final Properties smtpProps = new Properties();
         smtpProps.setProperty("mail.smtp.ssl.enable", Boolean.toString(emailAccount.isSsl()));
         smtpProps.setProperty("mail.smtp.tls.enable", Boolean.toString(emailAccount.isTls()));
         smtpProps.put("mail.smtp.host", emailAccount.getServer());
@@ -144,23 +151,23 @@ public class XcMailrApiTest extends AbstractTest
         smtpProps.setProperty("mail.user", emailAccount.getLogin());
 
         // create session
-        SmtpAuthenticator smtpAuthenticator = new SmtpAuthenticator(emailAccount.getLogin(), emailAccount.getPassword());
-        Session session = Session.getInstance(smtpProps, smtpAuthenticator);
+        final SmtpAuthenticator smtpAuthenticator = new SmtpAuthenticator(emailAccount.getLogin(), emailAccount.getPassword());
+        final Session session = Session.getInstance(smtpProps, smtpAuthenticator);
         // Create the message part
-        MimeMessage message = new MimeMessage(session);
+        final MimeMessage message = new MimeMessage(session);
 
         try
         {
 
-            Address[] addresses =
-            {
-              new InternetAddress(recipent)
-            };
-            BodyPart messageBodyPartText = new MimeBodyPart();
+            final Address[] addresses =
+                {
+                    new InternetAddress(recipent)
+                };
+            final BodyPart messageBodyPartText = new MimeBodyPart();
             messageBodyPartText.setText(text);
-            BodyPart messageBodyPartHtml = new MimeBodyPart();
+            final BodyPart messageBodyPartHtml = new MimeBodyPart();
             messageBodyPartHtml.setContent(text, "text/html; charset=utf-8");
-            Multipart multipart = new MimeMultipart();
+            final Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPartText);
             multipart.addBodyPart(messageBodyPartHtml);
 
@@ -173,7 +180,7 @@ public class XcMailrApiTest extends AbstractTest
             Transport.send(message);
             session.getTransport().close();
         }
-        catch (MessagingException e)
+        catch (final MessagingException e)
         {
             e.printStackTrace();
         }

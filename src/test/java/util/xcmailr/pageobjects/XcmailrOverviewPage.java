@@ -20,6 +20,8 @@ public class XcmailrOverviewPage
 
     public XcmailrOverviewPage validateEmailIsActive(String email)
     {
+        // TODO extract "find status" to a method and then check on the returned SelenideElement
+        // TODO Stick with exist or visible
         tempEmails.findBy(exactText(email)).parent().parent().find(".mailbox-status-mailExpired").shouldNot(exist);
         return this;
     }

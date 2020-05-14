@@ -20,26 +20,29 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 
+// FIXME solve warnings
+// TODO try blocks are too generous, make them smaller.
 public class SendRequest
 {
+    // FIXME this is deprecated, rather use the HttpClientBuilder
     private static DefaultHttpClient httpClient = new DefaultHttpClient();
 
     public static void login(String email, String password)
     {
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
         try
         {
-            HttpPost postRequest = new HttpPost("https://xcmailr.xceptance.de/login");
+            final HttpPost postRequest = new HttpPost("https://xcmailr.xceptance.de/login");
             postRequest.addHeader("Accept-Language", "en-US");
 
             // add form parameters:
-            List<BasicNameValuePair> formparams = new ArrayList<>();
+            final List<BasicNameValuePair> formparams = new ArrayList<>();
             formparams.add(new BasicNameValuePair("mail", email));
             formparams.add(new BasicNameValuePair("password", password));
 
             // encode form parameters and add
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams);
+            final UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams);
             postRequest.setEntity(entity);
 
             HttpResponse response;
@@ -55,13 +58,13 @@ public class SendRequest
             }
             postRequest.releaseConnection();
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             try
             {
                 br.close();
             }
-            catch (IOException e1)
+            catch (final IOException e1)
             {
                 e1.printStackTrace();
             }
@@ -72,13 +75,13 @@ public class SendRequest
 
     public static void deleteTempEmail(String tempEmail)
     {
-        String id = getIdOfTempEmail(tempEmail);
+        final String id = getIdOfTempEmail(tempEmail);
         HttpResponse response = null;
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
         try
         {
-            HttpPost postRequest = new HttpPost("https://xcmailr.xceptance.de/mail/delete/" + id);
+            final HttpPost postRequest = new HttpPost("https://xcmailr.xceptance.de/mail/delete/" + id);
 
             response = httpClient.execute(postRequest);
 
@@ -91,13 +94,13 @@ public class SendRequest
             }
             postRequest.releaseConnection();
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             try
             {
                 br.close();
             }
-            catch (IOException e1)
+            catch (final IOException e1)
             {
                 e1.printStackTrace();
             }
@@ -110,11 +113,11 @@ public class SendRequest
     private static String getIdOfTempEmail(String tempEmail)
     {
         HttpResponse response = null;
-        StringBuilder sb = new StringBuilder();
+        final StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
         try
         {
-            HttpGet getRequest = new HttpGet("https://xcmailr.xceptance.de/mail/getmails");
+            final HttpGet getRequest = new HttpGet("https://xcmailr.xceptance.de/mail/getmails");
 
             response = httpClient.execute(getRequest);
             br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
@@ -125,8 +128,9 @@ public class SendRequest
                 sb.append(output);
             }
             getRequest.releaseConnection();
-            JSONArray emails = (JSONArray) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(sb.toString());
-            Long id = (Long) ((JSONObject) ((JSONArray) JsonPath.read(emails, "$[?(@.fullAddress=='" + tempEmail + "')]")).get(0)).get("id");
+            final JSONArray emails = (JSONArray) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(sb.toString());
+            final Long id = (Long) ((JSONObject) ((JSONArray) JsonPath.read(emails,
+                                                                            "$[?(@.fullAddress=='" + tempEmail + "')]")).get(0)).get("id");
             return id.toString();
         }
         catch (IOException | ParseException e)
@@ -135,7 +139,7 @@ public class SendRequest
             {
                 br.close();
             }
-            catch (IOException e1)
+            catch (final IOException e1)
             {
                 e1.printStackTrace();
             }

@@ -16,6 +16,7 @@ import com.google.gson.JsonParser;
 public class XcMailrHelper
 {
 
+    // FIXME typo
     public static String getFirstMailsTextContent(String resonseBody)
     {
         return getFieldOfMailObject(resonseBody, 0, "textContent");
@@ -26,11 +27,14 @@ public class XcMailrHelper
         return getFieldOfMailObject(responseBody, 0, "htmlContent");
     }
 
+    // FIXME typo
+    // FIXME emailNo isn't used -> Remove it
     private static String getFieldOfMailObject(String resonseBody, int emailNo, String fieldName)
     {
         Assert.assertNotNull(resonseBody);
         final JsonParser parser = new JsonParser();
         JsonElement tempJsonElement = parser.parse(resonseBody);
+        // TODO only needed in the if statement, move declaration inside the if
         JsonArray emailArray;
         JsonObject emailObject = null;
 
@@ -50,10 +54,10 @@ public class XcMailrHelper
 
         if (emailObject.has(fieldName))
         {
-            String encodedString = emailObject.get(fieldName).getAsString();
+            final String encodedString = emailObject.get(fieldName).getAsString();
 
-            byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
-            String decodedString = new String(decodedBytes);
+            final byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
+            final String decodedString = new String(decodedBytes);
 
             return decodedString;
         }
@@ -73,7 +77,7 @@ public class XcMailrHelper
             fileWriter.append(htmlContent);
             fileWriter.close();
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             e.printStackTrace();
         }

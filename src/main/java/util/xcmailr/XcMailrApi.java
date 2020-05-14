@@ -16,6 +16,7 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
+// TODO Add javadoc to class and methods
 public class XcMailrApi
 {
     private static Logger LOGGER = LoggerFactory.getLogger(XcMailrApi.class);
@@ -25,16 +26,17 @@ public class XcMailrApi
     public final static String TEMPORARY_CONFIG_FILE_PROPERTY_NAME = "xcmailr.temporaryConfigFile";
 
     /**
-     * Retrieves the instance of xcmailr configuration for the current thread.
+     * Retrieves the {@link XcMailrConfiguration} instance of the current thread.
      * 
-     * @return the configuration instance for the current thread
+     * @return the XcMailrConfiguration instance of the current thread
      */
     public static XcMailrConfiguration getConfiguration()
     {
         // the property needs to be a valid URI in order to satisfy the Owner framework
         if (null == ConfigFactory.getProperty(TEMPORARY_CONFIG_FILE_PROPERTY_NAME))
         {
-            ConfigFactory.setProperty(TEMPORARY_CONFIG_FILE_PROPERTY_NAME, "file:this/path/should/never/exist/noOneShouldCreateMe.properties");
+            ConfigFactory.setProperty(TEMPORARY_CONFIG_FILE_PROPERTY_NAME,
+                                      "file:this/path/should/never/exist/noOneShouldCreateMe.properties");
         }
         return CONFIGURATION.computeIfAbsent(Thread.currentThread(), key -> {
             return ConfigFactory.create(XcMailrConfiguration.class);
@@ -43,10 +45,10 @@ public class XcMailrApi
 
     public static void createTemporaryEmail(String email)
     {
-        String url = getConfiguration().url() + "/create/temporaryMail/" + getConfiguration().apiToken() + "/" + email + "/"
-                     + getConfiguration().temporaryMailValidMinutes();
-        HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
-        Response response = callXcMailr(builder.build());
+        final String url = getConfiguration().url() + "/create/temporaryMail/" + getConfiguration().apiToken() + "/" + email + "/" +
+                           getConfiguration().temporaryMailValidMinutes();
+        final HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
+        final Response response = callXcMailr(builder.build());
 
         Assert.assertNotNull("XcMailr not reachable", response);
         Assert.assertEquals("Temporary Email could not be created", 200, response.code());
@@ -72,6 +74,7 @@ public class XcMailrApi
         String lastResult = null;
         while (true)
         {
+            // FIXME wrong comment
             // quit if failed for more than 3 times
             if (failCount >= maxFailures)
             {
@@ -93,7 +96,7 @@ public class XcMailrApi
                     }
                 }
             }
-            catch (Exception e)
+            catch (final Exception e)
             {
                 LOGGER.error("Error while analizing the request.");
             }
@@ -111,7 +114,7 @@ public class XcMailrApi
             {
                 Thread.sleep(getConfiguration().pollingInterval() * 1000);
             }
-            catch (InterruptedException e)
+            catch (final InterruptedException e)
             {
                 // quit if interrupted
                 LOGGER.error("Interrupted");
@@ -119,11 +122,11 @@ public class XcMailrApi
         }
     }
 
-    private static Response fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent, String format,
-                                                  boolean lastMatch)
+    private static Response fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent,
+                                                  String format, boolean lastMatch)
     {
-        String url = getConfiguration().url() + "/mailbox/" + "/" + email + "/" + getConfiguration().apiToken();
-        HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
+        final String url = getConfiguration().url() + "/mailbox/" + "/" + email + "/" + getConfiguration().apiToken();
+        final HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
 
         if (StringUtils.isNotBlank(from))
         {
@@ -154,9 +157,10 @@ public class XcMailrApi
             builder.addQueryParameter("lastMatch", "");
         }
 
-        Response response = callXcMailr(builder.build());
+        final Response response = callXcMailr(builder.build());
 
         Assert.assertNotNull("XcMailr not reachable", response);
+        // FIXME wrong assertion error message since no temporary e-mail is created
         Assert.assertEquals("Temporary Email could not be created", 200, response.code());
 
         return response;
@@ -164,13 +168,13 @@ public class XcMailrApi
 
     private static Response callXcMailr(HttpUrl httpUrl)
     {
-        OkHttpClient client = new OkHttpClient();
-        Request request = new Request.Builder().url(httpUrl).build();
+        final OkHttpClient client = new OkHttpClient();
+        final Request request = new Request.Builder().url(httpUrl).build();
         try
         {
             return client.newCall(request).execute();
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             LOGGER.error("Request error while callincg XcMailr.");
             e.printStackTrace();

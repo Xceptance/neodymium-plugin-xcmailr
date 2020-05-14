@@ -18,6 +18,7 @@ import com.google.common.base.Joiner;
 
 public abstract class AbstractTest
 {
+    // FIXME You should only require one temp file afaik, hence you don't need a list
     protected List<File> tempFiles = new LinkedList<>();
 
     protected Map<String, String> properties2 = new HashMap<>();
@@ -27,20 +28,23 @@ public abstract class AbstractTest
     protected File tempConfigFile2 = new File("./" + fileLocation);
 
     @Before
+    // FIXME naming
     public void setupApplitoolsConfiguration()
     {
         tempFiles.add(tempConfigFile2);
     }
 
     @After
+    // FIXME rename to what is cleaned up
     public void cleanup()
     {
-        for (File tempFile : tempFiles)
+        for (final File tempFile : tempFiles)
         {
             deleteTempFile(tempFile);
         }
     }
 
+    // FIXME only called in method that is not called?
     public void check(Result result, boolean expectedSuccessful, int expectedRunCount, int expectedIgnoreCount, int expectedFailCount,
                       String expectedFailureMessage)
     {
@@ -56,6 +60,7 @@ public abstract class AbstractTest
         }
     }
 
+    // FIXME never called?
     public void checkPass(Result result, int expectedRunCount, int expectedIgnoreCount, int expectedFailCount)
     {
         check(result, true, expectedRunCount, expectedIgnoreCount, expectedFailCount, null);
@@ -72,8 +77,9 @@ public abstract class AbstractTest
             {
                 Files.delete(tempFile.toPath());
             }
-            catch (Exception e)
+            catch (final Exception e)
             {
+                // FIXME typo
                 System.out.println(MessageFormat.format("Couldn''t delete temporary file: ''{0}'' caused by {1}",
                                                         tempFile.getAbsolutePath(), e));
             }
@@ -84,13 +90,13 @@ public abstract class AbstractTest
     {
         try
         {
-            String join = Joiner.on("\r\n").withKeyValueSeparator("=").join(map);
+            final String join = Joiner.on("\r\n").withKeyValueSeparator("=").join(map);
 
-            FileOutputStream outputStream = new FileOutputStream(file);
+            final FileOutputStream outputStream = new FileOutputStream(file);
             outputStream.write(join.getBytes());
             outputStream.close();
         }
-        catch (Exception e)
+        catch (final Exception e)
         {
             throw new RuntimeException(e);
         }
