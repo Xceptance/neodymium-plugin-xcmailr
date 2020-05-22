@@ -14,12 +14,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.jayway.jsonpath.JsonPath;
-
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
 
 public class SendRequest
 {
@@ -72,7 +70,7 @@ public class SendRequest
         }
     }
 
-    private static JSONObject getTempEmail(String tempEmail)
+    private static JsonObject getTempEmail(String tempEmail)
     {
         HttpResponse response = null;
         StringBuilder sb = new StringBuilder();
@@ -91,16 +89,16 @@ public class SendRequest
                 output = br.readLine();
             }
             getRequest.releaseConnection();
-            JSONArray emails = (JSONArray) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(sb.toString());
-            JSONArray emailObject = (JSONArray) JsonPath.read(emails, "$[?(@.fullAddress=='" + tempEmail + "')]");
+            String emails = JsonPath.read(sb.toString(), "$[?(@.fullAddress=='" + tempEmail + "')]").toString();
+            JsonArray emailObject = new JsonParser().parse(emails).getAsJsonArray();
 
             if (emailObject.size() > 0)
             {
-                return (JSONObject) emailObject.get(0);
+                return emailObject.get(0).getAsJsonObject();
             }
             return null;
         }
-        catch (IOException | ParseException e)
+        catch (IOException e)
         {
             try
             {
@@ -122,12 +120,12 @@ public class SendRequest
 
     public static boolean emailExpired(String email)
     {
-        return (Boolean) getTempEmail(email).get("expired");
+        return getTempEmail(email).get("expired").getAsBoolean();
     }
 
     public static void deleteTempEmail(String tempEmail)
     {
-        String id = ((Long) getTempEmail(tempEmail).get("id")).toString();
+        String id = getTempEmail(tempEmail).get("id").getAsString();
         HttpResponse response = null;
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;

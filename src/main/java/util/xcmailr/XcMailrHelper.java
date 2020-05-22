@@ -15,12 +15,23 @@ import com.google.gson.JsonParser;
 
 public class XcMailrHelper
 {
-
+    /**
+     * Retrieve messages's text content from json response body
+     * 
+     * @param responseBody
+     * @return messages's text content
+     */
     public static String getFirstMailsTextContent(String responseBody)
     {
         return getFieldOfMailObject(responseBody, "textContent");
     }
 
+    /**
+     * Retrieve messages's html content from json response body
+     * 
+     * @param responseBody
+     * @return messages's html content
+     */
     public static String getFirstMailsHtmlContent(String responseBody)
     {
         return getFieldOfMailObject(responseBody, "htmlContent");
@@ -60,6 +71,11 @@ public class XcMailrHelper
         return null;
     }
 
+    /**
+     * Open passed html content in current browser window
+     * 
+     * @param htmlContent
+     */
     public static void openHtmlContentWithCurrentWebDriver(String htmlContent)
     {
         File tempHtmlContentFile = null;

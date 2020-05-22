@@ -16,11 +16,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.codeborne.selenide.Selenide;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.xceptance.neodymium.NeodymiumRunner;
 
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
 import net.minidev.json.parser.ParseException;
 import util.xcmailr.data.EmailAccount;
 import util.xcmailr.util.Credentials;
@@ -85,16 +85,14 @@ public class XcMailrApiTest extends AbstractTest
         SendEmail.send(emailAccount, tempEmail, subject, textToSend);
 
         String response = XcMailrApi.retrieveLastEmailBySubject(tempEmail, subject);
-        JSONArray messagesArray = (JSONArray) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(response);
-        JSONObject message = (JSONObject) messagesArray.get(0);
+        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
+        JsonObject message = messagesArray.get(0).getAsJsonObject();
 
-        Assert.assertEquals(message.get("mailAddress").toString().replaceAll("\"", ""), tempEmail);
-        Assert.assertEquals(message.get("sender").toString().replaceAll("\"", ""), emailAccount.getEmail());
-        Assert.assertEquals(message.get("subject").toString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(decode(message.get("htmlContent").toString()).replaceAll("\"", ""),
-                            textToSend);
-        Assert.assertEquals(decode(message.get("textContent").toString()).replaceAll("\"", ""),
-                            textToSend);
+        Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
+        Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
+        Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
+        Assert.assertEquals(decode(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decode(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
     }
 
     private String decode(String text)
