@@ -7,6 +7,7 @@ import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.$$;
 
 import com.codeborne.selenide.ElementsCollection;
+import com.codeborne.selenide.SelenideElement;
 
 public class XcmailrOverviewPage
 {
@@ -14,22 +15,31 @@ public class XcmailrOverviewPage
 
     public XcmailrOverviewPage validateEmailCreated(String email)
     {
-        tempEmails.findBy(exactText(email)).shouldBe(visible);
+        tempEmails.findBy(exactText(email)).shouldBe(exist);
         return this;
     }
 
     public XcmailrOverviewPage validateEmailIsActive(String email)
     {
-        // TODO extract "find status" to a method and then check on the returned SelenideElement
-        // TODO Stick with exist or visible
-        tempEmails.findBy(exactText(email)).parent().parent().find(".mailbox-status-mailExpired").shouldNot(exist);
+        findStatus(email).shouldNot(exist);
         return this;
     }
 
     public XcmailrOverviewPage validateEmailIsExpired(String email)
     {
-        tempEmails.findBy(exactText(email)).parent().parent().find(".mailbox-status-mailExpired").shouldBe(visible);
+        $$(".ng-scope.danger>.mbAddress>.ng-binding").findBy(exactText(email)).shouldBe(visible);
         return this;
+    }
+
+    public XcmailrOverviewPage refreshEmailsList()
+    {
+        $("#refresh-button").click();
+        return this;
+    }
+
+    private SelenideElement findStatus(String email)
+    {
+        return tempEmails.findBy(exactText(email)).parent().parent().find(".mailbox-status-mailExpired");
     }
 
     public XcmailrOverviewPage deleteTempEmail(String email)

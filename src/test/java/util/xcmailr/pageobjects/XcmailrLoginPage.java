@@ -12,10 +12,10 @@ public class XcmailrLoginPage
 {
     public XcmailrLoginPage login(String email, String password)
     {
-        // TODO put url in a local variable and reuse it
-        Selenide.open(ConfigFactory.create(XcMailrConfiguration.class).url());
+        String url = ConfigFactory.create(XcMailrConfiguration.class).url();
+        Selenide.open(url);
         Selenide.clearBrowserCookies();
-        Selenide.open(ConfigFactory.create(XcMailrConfiguration.class).url());
+        Selenide.open(url);
         $(".loginAccount").click();
         $("#inputLoginMail").sendKeys(email);
         $("#inputLoginPassword").sendKeys(password);

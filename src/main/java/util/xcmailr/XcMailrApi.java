@@ -16,7 +16,6 @@ import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
 
-// TODO Add javadoc to class and methods
 public class XcMailrApi
 {
     private static Logger LOGGER = LoggerFactory.getLogger(XcMailrApi.class);
@@ -43,6 +42,25 @@ public class XcMailrApi
         });
     }
 
+    /**
+     * Reset configuration properties for thread. Needed for unit tests to enable reset of configurations for individual
+     * test methods, which belong to one test class
+     */
+    protected static void resetConfigurationsForThread()
+    {
+        CONFIGURATION.put(Thread.currentThread(), ConfigFactory.create(XcMailrConfiguration.class));
+    }
+
+    /**
+     * Create temporary email with validity time stated in xcmailr.properties under xcmailr.temporaryMailValidMinutes
+     * option
+     * 
+     * @param email
+     *            full temporary mail's name with domain </br>
+     *            mind, that not all domains are acceptable acceptable domains : mailsink.xceptance.de, varmail.net,
+     *            varmail.co.uk, varmailservice.com, var-mail.com, mail.varmail.net, varmail.de, varmail.online,
+     *            varmail.international
+     */
     public static void createTemporaryEmail(String email)
     {
         final String url = getConfiguration().url() + "/create/temporaryMail/" + getConfiguration().apiToken() + "/" + email + "/" +
@@ -56,16 +74,54 @@ public class XcMailrApi
         response.close();
     }
 
+    /**
+     * Get last received email with specified subject
+     * 
+     * @param email
+     *            email address on which expected email should arrive
+     * @param subject
+     *            regular expression to find in the emails subject
+     * @return json object of received message
+     */
     public static String retrieveLastEmailBySubject(String email, String subject)
     {
         return fetchEmails(email, null, subject, null, null, null, true);
     }
 
+    /**
+     * Get last received email from specified sender
+     * 
+     * @param email
+     *            email address on which expected email should arrive
+     * @param sender
+     *            a regular expression to find in the address the mail was sent from
+     * @return json object of received message
+     */
     public static String retrieveLastEmailBySender(String email, String sender)
     {
         return fetchEmails(email, sender, null, null, null, null, true);
     }
 
+    /**
+     * Get received email, which matches specified parameters
+     * 
+     * @param email
+     *            email address on which expected email should arrive
+     * @param from
+     *            a regular expression to find in the address the mail was sent from
+     * @param subject
+     *            regular expression to find in the emails subject
+     * @param textContent
+     *            a regular expression to find in the emails text content
+     * @param htmlContent
+     *            a regular expression to find in the emails html content
+     * @param format
+     *            a string indicating the desired response format. Valid values are "html", "json" and "header".
+     * @param lastMatch
+     *            a parameter without value that limits the result set to one entry. This is the last filter that will
+     *            be applied to result set.
+     * @return object of the received message in format specified in parameters
+     */
     public static String fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String format,
                                      boolean lastMatch)
     {
@@ -74,8 +130,7 @@ public class XcMailrApi
         String lastResult = null;
         while (true)
         {
-            // FIXME wrong comment
-            // quit if failed for more than 3 times
+            // quit if failed for more than maxFailures times
             if (failCount >= maxFailures)
             {
                 LOGGER.warn("No email retrieved while polling.");
@@ -160,8 +215,8 @@ public class XcMailrApi
         final Response response = callXcMailr(builder.build());
 
         Assert.assertNotNull("XcMailr not reachable", response);
-        // FIXME wrong assertion error message since no temporary e-mail is created
-        Assert.assertEquals("Temporary Email could not be created", 200, response.code());
+
+        Assert.assertEquals("Temporary Email could not be accessed", 200, response.code());
 
         return response;
     }

@@ -16,31 +16,27 @@ import com.google.gson.JsonParser;
 public class XcMailrHelper
 {
 
-    // FIXME typo
-    public static String getFirstMailsTextContent(String resonseBody)
+    public static String getFirstMailsTextContent(String responseBody)
     {
-        return getFieldOfMailObject(resonseBody, 0, "textContent");
+        return getFieldOfMailObject(responseBody, "textContent");
     }
 
     public static String getFirstMailsHtmlContent(String responseBody)
     {
-        return getFieldOfMailObject(responseBody, 0, "htmlContent");
+        return getFieldOfMailObject(responseBody, "htmlContent");
     }
 
-    // FIXME typo
-    // FIXME emailNo isn't used -> Remove it
-    private static String getFieldOfMailObject(String resonseBody, int emailNo, String fieldName)
+    private static String getFieldOfMailObject(String responseBody, String fieldName)
     {
-        Assert.assertNotNull(resonseBody);
+        Assert.assertNotNull(responseBody);
         final JsonParser parser = new JsonParser();
-        JsonElement tempJsonElement = parser.parse(resonseBody);
-        // TODO only needed in the if statement, move declaration inside the if
-        JsonArray emailArray;
+        JsonElement tempJsonElement = parser.parse(responseBody);
+
         JsonObject emailObject = null;
 
         if (tempJsonElement.isJsonArray())
         {
-            emailArray = tempJsonElement.getAsJsonArray();
+            JsonArray emailArray = tempJsonElement.getAsJsonArray();
             if (emailArray.size() == 1)
             {
                 tempJsonElement = emailArray.get(0);
@@ -82,7 +78,5 @@ public class XcMailrHelper
             e.printStackTrace();
         }
         Selenide.open("file://" + tempHtmlContentFile.getAbsolutePath());
-        Selenide.sleep(4000);
-
     }
 }
