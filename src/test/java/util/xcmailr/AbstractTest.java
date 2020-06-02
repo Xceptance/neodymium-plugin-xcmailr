@@ -14,11 +14,11 @@ import com.google.common.base.Joiner;
 
 public abstract class AbstractTest
 {
-    protected Map<String, String> properties2 = new HashMap<>();
+    protected static Map<String, String> properties = new HashMap<>();
 
-    protected final String fileLocation = "config/temp-xcmailr.properties";
+    protected static final String fileLocation = "config/temp-xcmailr.properties";
 
-    protected File tempConfigFile2 = new File("./" + fileLocation);
+    protected static File tempConfigFile2 = new File("./" + fileLocation);
 
     @After
     public void deleteTempFile()
@@ -47,12 +47,10 @@ public abstract class AbstractTest
         }
     }
 
-    protected void writeProperty(String propertyName, String propertyValue)
+    protected static void writeProperty()
     {
-        properties2.put(propertyName, propertyValue);
-        writeMapToPropertiesFile(properties2, tempConfigFile2);
+        writeMapToPropertiesFile(properties, tempConfigFile2);
         ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
-        XcMailrApi.resetConfigurationsForThread();
     }
 
     public static void writeMapToPropertiesFile(Map<String, String> map, File file)

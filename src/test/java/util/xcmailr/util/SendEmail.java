@@ -72,7 +72,7 @@ public class SendEmail
         }
         catch (final MessagingException e)
         {
-            e.printStackTrace();
+            throw new RuntimeException("failed to send email via smtp server", e);
         }
     }
 }

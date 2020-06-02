@@ -11,7 +11,7 @@ import com.xceptance.neodymium.NeodymiumRunner;
 import com.xceptance.neodymium.module.statement.browser.multibrowser.Browser;
 
 @RunWith(NeodymiumRunner.class)
-public class XcMailrHelperTest extends AbstractTest
+public class XcMailrHelperTest
 {
     private final String text = "Hi\n\nHow are you?)\n\nBye";
 

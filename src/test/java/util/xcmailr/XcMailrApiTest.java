@@ -1,8 +1,8 @@
 package util.xcmailr;
 
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.mail.MessagingException;
 
@@ -11,15 +11,14 @@ import org.aeonbits.owner.util.Base64;
 import org.apache.http.client.ClientProtocolException;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.codeborne.selenide.Selenide;
-import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.xceptance.neodymium.NeodymiumRunner;
+import com.xceptance.neodymium.util.DataUtils;
 
 import net.minidev.json.parser.ParseException;
 import util.xcmailr.data.EmailAccount;
@@ -30,23 +29,27 @@ import util.xcmailr.util.SendRequest;
 @RunWith(NeodymiumRunner.class)
 public class XcMailrApiTest extends AbstractTest
 {
-    protected final String xcmailrEmail = CREDENTIALS.xcmailrEmail();
-
-    protected final String xcmailrPassword = CREDENTIALS.xcmailrPassword();
-
     protected static final Credentials CREDENTIALS = ConfigFactory.create(Credentials.class, System.getenv());
 
-    protected final String tempEmail = "testTest1@varmail.net";
+    protected static final String validMinutes = "1";
 
-    @Before
-    public void configureApiToken()
+    protected static String tempEmail;
+
+    @BeforeClass
+    public static void configureApiToken() throws ClientProtocolException, IOException
     {
+        tempEmail = DataUtils.randomEmail();
+        final String xcmailrEmail = CREDENTIALS.xcmailrEmail();
+
+        final String xcmailrPassword = CREDENTIALS.xcmailrPassword();
+
         final String apiToken = System.getenv("XCMAILR_TOKEN");
         if (apiToken != null)
         {
-            writeProperty("xcmailr.apiToken", apiToken);
+            properties.put("xcmailr.apiToken", apiToken);
         }
-        writeProperty("xcmailr.temporaryMailValidMinutes", "3");
+        properties.put("xcmailr.temporaryMailValidMinutes", validMinutes);
+        writeProperty();
         SendRequest.login(xcmailrEmail, xcmailrPassword);
     }
 
@@ -66,11 +69,14 @@ public class XcMailrApiTest extends AbstractTest
     @Test
     public void testEmailExpired()
     {
-        writeProperty("xcmailr.temporaryMailValidMinutes", "1");
-        XcMailrApi.createTemporaryEmail(tempEmail);
-        Assert.assertFalse(SendRequest.emailExpired(tempEmail));
-        Selenide.sleep(120000);
-        assertTrue(SendRequest.emailExpired(tempEmail));
+        String response = XcMailrApi.createTemporaryEmail(tempEmail);
+
+        Pattern validMinutesPatters = Pattern.compile("<div class=\"email-validity-minutes\">(\\d)</div>");
+        Matcher matcher = validMinutesPatters.matcher(response);
+        while (matcher.find())
+        {
+            Assert.assertEquals(validMinutes, matcher.group(1));
+        }
     }
 
     @Test
@@ -85,17 +91,16 @@ public class XcMailrApiTest extends AbstractTest
         SendEmail.send(emailAccount, tempEmail, subject, textToSend);
 
         String response = XcMailrApi.retrieveLastEmailBySubject(tempEmail, subject);
-        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        JsonObject message = messagesArray.get(0).getAsJsonObject();
+        JsonObject message = new JsonParser().parse(response).getAsJsonObject();
 
         Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
         Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
         Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(decode(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
-        Assert.assertEquals(decode(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
     }
 
-    private String decode(String text)
+    private String decodeAndNormalize(String text)
     {
         return new String(Base64.decode(text)).replaceAll(String.valueOf((char) 13), "");
     }

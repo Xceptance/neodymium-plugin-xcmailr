@@ -1,6 +1,9 @@
 package util.xcmailr;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -10,6 +13,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.JsonParser;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -43,98 +48,93 @@ public class XcMailrApi
     }
 
     /**
-     * Reset configuration properties for thread. Needed for unit tests to enable reset of configurations for individual
-     * test methods, which belong to one test class
-     */
-    protected static void resetConfigurationsForThread()
-    {
-        CONFIGURATION.put(Thread.currentThread(), ConfigFactory.create(XcMailrConfiguration.class));
-    }
-
-    /**
-     * Create temporary email with validity time stated in xcmailr.properties under xcmailr.temporaryMailValidMinutes
-     * option
+     * Creates a temporary e-mail. <br>
+     * The validity period is determined from the configuration.
      * 
      * @param email
-     *            full temporary mail's name with domain </br>
-     *            mind, that not all domains are acceptable acceptable domains : mailsink.xceptance.de, varmail.net,
-     *            varmail.co.uk, varmailservice.com, var-mail.com, mail.varmail.net, varmail.de, varmail.online,
-     *            varmail.international
+     *            the e-mail address <br>
+     *            The domain of the e-mail must match the XcMailr's available domains.
      */
-    public static void createTemporaryEmail(String email)
+    public static String createTemporaryEmail(String email)
     {
         final String url = getConfiguration().url() + "/create/temporaryMail/" + getConfiguration().apiToken() + "/" + email + "/" +
                            getConfiguration().temporaryMailValidMinutes();
         final HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
         final Response response = callXcMailr(builder.build());
+        String responseBody = readResponse(response.body().byteStream()).toString();
 
         Assert.assertNotNull("XcMailr not reachable", response);
-        Assert.assertEquals("Temporary Email could not be created", 200, response.code());
-        LOGGER.debug("Email created: \"" + email + "\"");
+        Assert.assertEquals("Temporary Email could not be accessed", 200, response.code());
+        LOGGER.debug("E-mail created: \"" + email + "\"");
         response.close();
+        return responseBody;
     }
 
     /**
-     * Get last received email with specified subject
+     * Gets the last received e-mail with the specified subject.
      * 
      * @param email
-     *            email address on which expected email should arrive
+     *            the e-mail address which should receive the expected e-mail
      * @param subject
-     *            regular expression to find in the emails subject
-     * @return json object of received message
+     *            the received e-mail's subject. May also be a regular expression.
+     * @return a String containing a JSON Object of the received message
      */
     public static String retrieveLastEmailBySubject(String email, String subject)
     {
-        return fetchEmails(email, null, subject, null, null, null, true);
+        return retrieveLastEmail(email, null, subject);
     }
 
     /**
-     * Get last received email from specified sender
+     * Gets the last received e-mail from the specified sender.
      * 
      * @param email
-     *            email address on which expected email should arrive
+     *            the e-mail address which should receive the expected e-mail
      * @param sender
-     *            a regular expression to find in the address the mail was sent from
-     * @return json object of received message
+     *            the received e-mail's sender. May also be a regular expression.
+     * @return a String containing a JSON Object of the received message
      */
     public static String retrieveLastEmailBySender(String email, String sender)
     {
-        return fetchEmails(email, sender, null, null, null, null, true);
+        return retrieveLastEmail(email, sender, null);
+    }
+
+    private static String retrieveLastEmail(String email, String sender, String subject)
+    {
+        String response = fetchEmails(email, sender, subject, null, null, null, true);
+        return new JsonParser().parse(response).getAsJsonArray().get(0).getAsJsonObject().toString();
     }
 
     /**
-     * Get received email, which matches specified parameters
+     * Gets all received e-mails which match the specified parameters
      * 
      * @param email
-     *            email address on which expected email should arrive
+     *            the e-mail address which should receive the expected e-mails.
      * @param from
-     *            a regular expression to find in the address the mail was sent from
+     *            the received e-mail's sender. May also be a regular expression.
      * @param subject
-     *            regular expression to find in the emails subject
+     *            the received e-mail's subject. May also be a regular expression.
      * @param textContent
-     *            a regular expression to find in the emails text content
+     *            the text content of the e-mail. May also be a regular expression.
      * @param htmlContent
-     *            a regular expression to find in the emails html content
+     *            the HTML content of the e-mail. May also be a regular expression.
      * @param format
-     *            a string indicating the desired response format. Valid values are "html", "json" and "header".
+     *            a String indicating the desired response format. Valid values are "html", "json" and "header".
      * @param lastMatch
-     *            a parameter without value that limits the result set to one entry. This is the last filter that will
-     *            be applied to result set.
-     * @return object of the received message in format specified in parameters
+     *            a boolean indicating whether only the last e-mail or more should be returned.
+     * @return a String containing JSON Objects of each e-mail
      */
     public static String fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String format,
                                      boolean lastMatch)
     {
         final int maxFailures = getConfiguration().maximumWaitingTime() * 60 / getConfiguration().pollingInterval();
         int failCount = 0;
-        String lastResult = null;
         while (true)
         {
             // quit if failed for more than maxFailures times
             if (failCount >= maxFailures)
             {
-                LOGGER.warn("No email retrieved while polling.");
-                return lastResult;
+                LOGGER.warn("No e-mail retrieved while polling.");
+                return null;
             }
 
             Response response = null;
@@ -143,7 +143,7 @@ public class XcMailrApi
                 response = fetchEmailsFromRemote(email, from, subject, textContent, htmlContent, format, lastMatch);
                 if (response.isSuccessful())
                 {
-                    lastResult = response.body().string();
+                    String lastResult = response.body().string();
                     if (StringUtils.isNotBlank(lastResult) && !lastResult.equals("[]"))
                     {
                         // success
@@ -175,6 +175,38 @@ public class XcMailrApi
                 LOGGER.error("Interrupted");
             }
         }
+    }
+
+    private static StringBuilder readResponse(InputStream inputStream)
+    {
+        StringBuilder sb = new StringBuilder();
+        BufferedReader br = null;
+        try
+        {
+            br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
+
+            sb = new StringBuilder();
+            for (String output = br.readLine(); output != null; output = br.readLine())
+            {
+                sb.append(output);
+            }
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException("couldn't read the response from server", e);
+        }
+        finally
+        {
+            try
+            {
+                br.close();
+            }
+            catch (IOException e)
+            {
+                throw new RuntimeException("error while closing the buffered readed", e);
+            }
+        }
+        return sb;
     }
 
     private static Response fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent,
@@ -211,12 +243,11 @@ public class XcMailrApi
         {
             builder.addQueryParameter("lastMatch", "");
         }
-
         final Response response = callXcMailr(builder.build());
 
         Assert.assertNotNull("XcMailr not reachable", response);
 
-        Assert.assertEquals("Temporary Email could not be accessed", 200, response.code());
+        Assert.assertEquals("Mailbox could not be accessed", 200, response.code());
 
         return response;
     }

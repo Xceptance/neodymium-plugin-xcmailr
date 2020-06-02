@@ -15,7 +15,7 @@ public class XcmailrOverviewPage
 
     public XcmailrOverviewPage validateEmailCreated(String email)
     {
-        tempEmails.findBy(exactText(email)).shouldBe(exist);
+        tempEmails.findBy(exactText(email)).should(exist);
         return this;
     }
 

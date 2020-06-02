@@ -16,10 +16,11 @@ import com.google.gson.JsonParser;
 public class XcMailrHelper
 {
     /**
-     * Retrieve messages's text content from json response body
+     * Retrieves the text content of the first e-mail from the JSON response body. *
      * 
      * @param responseBody
-     * @return messages's text content
+     *            is the return value of XcMailApi.fetchEmails() and its sugar methods
+     * @return a String containing the e-mail's text content
      */
     public static String getFirstMailsTextContent(String responseBody)
     {
@@ -27,10 +28,11 @@ public class XcMailrHelper
     }
 
     /**
-     * Retrieve messages's html content from json response body
+     * Retrieves the HTML content of the first e-mail from the JSON response body. *
      * 
      * @param responseBody
-     * @return messages's html content
+     *            is the return value of XcMailApi.fetchEmails() and its sugar methods
+     * @return a String containing the e-mail's HTML content
      */
     public static String getFirstMailsHtmlContent(String responseBody)
     {
@@ -43,20 +45,9 @@ public class XcMailrHelper
         final JsonParser parser = new JsonParser();
         JsonElement tempJsonElement = parser.parse(responseBody);
 
-        JsonObject emailObject = null;
-
-        if (tempJsonElement.isJsonArray())
-        {
-            JsonArray emailArray = tempJsonElement.getAsJsonArray();
-            if (emailArray.size() == 1)
-            {
-                tempJsonElement = emailArray.get(0);
-                if (tempJsonElement.isJsonObject())
-                {
-                    emailObject = tempJsonElement.getAsJsonObject();
-                }
-            }
-        }
+        JsonArray emailArray = tempJsonElement.getAsJsonArray();
+        tempJsonElement = emailArray.get(0);
+        final JsonObject emailObject = tempJsonElement.getAsJsonObject();
         Assert.assertNotNull(emailObject);
 
         if (emailObject.has(fieldName))
@@ -72,9 +63,10 @@ public class XcMailrHelper
     }
 
     /**
-     * Open passed html content in current browser window
+     * Open the supplied HTML content with the current web driver.
      * 
      * @param htmlContent
+     *            is any HTML text, e.g. return value of the getFirstMailsHtmlContent() method
      */
     public static void openHtmlContentWithCurrentWebDriver(String htmlContent)
     {

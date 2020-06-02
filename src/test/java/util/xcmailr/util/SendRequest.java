@@ -2,6 +2,7 @@ package util.xcmailr.util;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,78 +20,50 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.jayway.jsonpath.JsonPath;
 
+import util.xcmailr.XcMailrApi;
+
 public class SendRequest
 {
     private static CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 
     public static void login(String email, String password)
     {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = null;
         try
         {
-            HttpPost postRequest = new HttpPost("https://xcmailr.xceptance.de/login");
+            final HttpPost postRequest = new HttpPost(XcMailrApi.getConfiguration().url() + "/login");
             postRequest.addHeader("Accept-Language", "en-US");
 
             // add form parameters:
-            List<BasicNameValuePair> formparams = new ArrayList<>();
+            final List<BasicNameValuePair> formparams = new ArrayList<>();
             formparams.add(new BasicNameValuePair("mail", email));
             formparams.add(new BasicNameValuePair("password", password));
 
             // encode form parameters and add
-            UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams);
+            final UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams);
             postRequest.setEntity(entity);
 
-            HttpResponse response;
+            httpClient.execute(postRequest);
 
-            response = httpClient.execute(postRequest);
-
-            br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-
-            String output = br.readLine();
-            while (output != null)
-            {
-                sb.append(output);
-                output = br.readLine();
-            }
             postRequest.releaseConnection();
         }
         catch (IOException e)
         {
-            try
-            {
-                br.close();
-            }
-            catch (IOException e1)
-            {
-                e1.printStackTrace();
-            }
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
 
     private static JsonObject getTempEmail(String tempEmail)
     {
-        HttpResponse response = null;
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = null;
         try
         {
-            HttpGet getRequest = new HttpGet("https://xcmailr.xceptance.de/mail/getmails");
+            final HttpGet getRequest = new HttpGet(XcMailrApi.getConfiguration().url() + "/mail/getmails");
 
-            response = httpClient.execute(getRequest);
-            br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+            final HttpResponse response = httpClient.execute(getRequest);
 
-            String output = br.readLine();
-            while (output != null)
-            {
-                sb.append(output);
-                output = br.readLine();
-            }
+            final StringBuilder sb = readResponse(response.getEntity().getContent());
             getRequest.releaseConnection();
-            String emails = JsonPath.read(sb.toString(), "$[?(@.fullAddress=='" + tempEmail + "')]").toString();
-            JsonArray emailObject = new JsonParser().parse(emails).getAsJsonArray();
+            final String emails = JsonPath.read(sb.toString(), "$[?(@.fullAddress=='" + tempEmail + "')]").toString();
+            final JsonArray emailObject = new JsonParser().parse(emails).getAsJsonArray();
 
             if (emailObject.size() > 0)
             {
@@ -100,15 +73,6 @@ public class SendRequest
         }
         catch (IOException e)
         {
-            try
-            {
-                br.close();
-            }
-            catch (IOException e1)
-            {
-                e1.printStackTrace();
-            }
-            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }
@@ -126,35 +90,48 @@ public class SendRequest
     public static void deleteTempEmail(String tempEmail)
     {
         String id = getTempEmail(tempEmail).get("id").getAsString();
-        HttpResponse response = null;
+        try
+        {
+            final HttpPost postRequest = new HttpPost(XcMailrApi.getConfiguration().url() + "/mail/delete/" + id);
+            httpClient.execute(postRequest);
+
+            postRequest.releaseConnection();
+        }
+        catch (IOException e)
+        {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static StringBuilder readResponse(InputStream inputStream)
+    {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
         try
         {
-            HttpPost postRequest = new HttpPost("https://xcmailr.xceptance.de/mail/delete/" + id);
-            response = httpClient.execute(postRequest);
+            br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
 
-            br = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
-            String output = br.readLine();
-            while (output != null)
+            sb = new StringBuilder();
+            for (String output = br.readLine(); output != null; output = br.readLine())
             {
                 sb.append(output);
-                output = br.readLine();
             }
-            postRequest.releaseConnection();
         }
         catch (IOException e)
+        {
+            throw new RuntimeException("couldn't read the response from server", e);
+        }
+        finally
         {
             try
             {
                 br.close();
             }
-            catch (IOException e1)
+            catch (IOException e)
             {
-                e1.printStackTrace();
+                throw new RuntimeException("error while closing the buffered readed", e);
             }
-            e.printStackTrace();
-            throw new RuntimeException(e);
         }
+        return sb;
     }
 }
