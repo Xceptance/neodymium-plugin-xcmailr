@@ -24,6 +24,7 @@ public abstract class AbstractTest
     public void deleteTempFile()
     {
         deleteTempFile(tempConfigFile2);
+        properties.clear();
     }
 
     /**
@@ -40,14 +41,13 @@ public abstract class AbstractTest
             catch (final Exception e)
             {
                 // double apostrophe needed, otherwise MessageFormat.format() won't work
-                System.out.println(MessageFormat.format(
-                                                        "Coundn''t delete temporary file: ''{0}'' caused by {1}",
+                System.out.println(MessageFormat.format("Couldn''t delete temporary file: ''{0}'' caused by {1}",
                                                         tempFile.getAbsoluteFile(), e));
             }
         }
     }
 
-    protected static void writeProperty()
+    protected static void writeProperties()
     {
         writeMapToPropertiesFile(properties, tempConfigFile2);
         ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);

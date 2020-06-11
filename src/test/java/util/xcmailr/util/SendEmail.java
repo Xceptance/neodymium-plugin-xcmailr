@@ -19,17 +19,19 @@ import util.xcmailr.data.SmtpAuthenticator;
 
 public class SendEmail
 {
-
     /**
-     * Method to send message
+     * Sends an e-mail from the specified <code>emailAccount</code> to the specified <code>recipient</code>.
      * 
-     * @param messageContainer
-     *            message to send
+     * @param emailAccount
+     *            is an <code>EmailAccount</code> object containing configuration of SMTP server and credentials for it
+     * @param recipient
+     *            e-mail address of recipient
+     * @param subject
+     *            subject of the e-mail
      * @param text
-     *            message text
-     * @throws MessagingException
+     *            text to send
      */
-    public static void send(EmailAccount emailAccount, String recipent, String subject, String text)
+    public static void send(EmailAccount emailAccount, String recipient, String subject, String text)
     {
         final Properties smtpProps = new Properties();
         smtpProps.setProperty("mail.smtp.ssl.enable", Boolean.toString(emailAccount.isSsl()));
@@ -50,9 +52,9 @@ public class SendEmail
         {
 
             final Address[] addresses =
-            {
-              new InternetAddress(recipent)
-            };
+                {
+                    new InternetAddress(recipient)
+                };
             final BodyPart messageBodyPartText = new MimeBodyPart();
             messageBodyPartText.setText(text);
             final BodyPart messageBodyPartHtml = new MimeBodyPart();
@@ -72,7 +74,7 @@ public class SendEmail
         }
         catch (final MessagingException e)
         {
-            throw new RuntimeException("failed to send email via smtp server", e);
+            throw new RuntimeException("Failed to send e-mail via SMTP server", e);
         }
     }
 }

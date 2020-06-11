@@ -16,11 +16,11 @@ import com.google.gson.JsonParser;
 public class XcMailrHelper
 {
     /**
-     * Retrieves the text content of the first e-mail from the JSON response body. *
+     * Retrieves the text content of the first e-mail from the JSON response body.
      * 
      * @param responseBody
      *            is the return value of XcMailApi.fetchEmails() and its sugar methods
-     * @return a String containing the e-mail's text content
+     * @return a String containing the response of an XcMailr API call, e.g. <code>XcMailrApi.fetchEmails</copde>
      */
     public static String getFirstMailsTextContent(String responseBody)
     {
@@ -32,7 +32,7 @@ public class XcMailrHelper
      * 
      * @param responseBody
      *            is the return value of XcMailApi.fetchEmails() and its sugar methods
-     * @return a String containing the e-mail's HTML content
+     * @return a String containing the response of an XcMailr API call, e.g. <code>XcMailrApi.fetchEmails</copde>
      */
     public static String getFirstMailsHtmlContent(String responseBody)
     {
@@ -45,9 +45,15 @@ public class XcMailrHelper
         final JsonParser parser = new JsonParser();
         JsonElement tempJsonElement = parser.parse(responseBody);
 
+        Assert.assertTrue(tempJsonElement.isJsonArray());
+
         JsonArray emailArray = tempJsonElement.getAsJsonArray();
         tempJsonElement = emailArray.get(0);
+
+        Assert.assertTrue(tempJsonElement.isJsonObject());
+
         final JsonObject emailObject = tempJsonElement.getAsJsonObject();
+
         Assert.assertNotNull(emailObject);
 
         if (emailObject.has(fieldName))
@@ -66,7 +72,7 @@ public class XcMailrHelper
      * Open the supplied HTML content with the current web driver.
      * 
      * @param htmlContent
-     *            is any HTML text, e.g. return value of the getFirstMailsHtmlContent() method
+     *            a String containing the HTML that should be opened in the current web driver
      */
     public static void openHtmlContentWithCurrentWebDriver(String htmlContent)
     {

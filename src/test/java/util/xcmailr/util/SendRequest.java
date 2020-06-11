@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -26,23 +27,23 @@ public class SendRequest
 {
     private static CloseableHttpClient httpClient = HttpClientBuilder.create().build();
 
-    public static void login(String email, String password)
+    public static void login(String xcmailrEmail, String xcmailrPassword)
     {
         try
         {
-            final HttpPost postRequest = new HttpPost(XcMailrApi.getConfiguration().url() + "/login");
+            final HttpPost postRequest = new HttpPost(StringUtils.appendIfMissing(XcMailrApi.getConfiguration().url(), "/") + "/login");
             postRequest.addHeader("Accept-Language", "en-US");
 
             // add form parameters:
             final List<BasicNameValuePair> formparams = new ArrayList<>();
-            formparams.add(new BasicNameValuePair("mail", email));
-            formparams.add(new BasicNameValuePair("password", password));
+            formparams.add(new BasicNameValuePair("mail", xcmailrEmail));
+            formparams.add(new BasicNameValuePair("password", xcmailrPassword));
 
             // encode form parameters and add
             final UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams);
             postRequest.setEntity(entity);
 
-            httpClient.execute(postRequest);
+            final HttpResponse response = httpClient.execute(postRequest);
 
             postRequest.releaseConnection();
         }

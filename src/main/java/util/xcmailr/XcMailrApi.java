@@ -1,9 +1,6 @@
 package util.xcmailr;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -13,8 +10,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.gson.JsonParser;
 
 import okhttp3.HttpUrl;
 import okhttp3.OkHttpClient;
@@ -54,17 +49,19 @@ public class XcMailrApi
      * @param email
      *            the e-mail address <br>
      *            The domain of the e-mail must match the XcMailr's available domains.
+     * @throws IOException
+     *             in case if there was an error while reading the response from server
      */
-    public static String createTemporaryEmail(String email)
+    public static String createTemporaryEmail(String email) throws IOException
     {
         final String url = getConfiguration().url() + "/create/temporaryMail/" + getConfiguration().apiToken() + "/" + email + "/" +
                            getConfiguration().temporaryMailValidMinutes();
         final HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
         final Response response = callXcMailr(builder.build());
-        String responseBody = readResponse(response.body().byteStream()).toString();
+        String responseBody = response.body().string();
 
         Assert.assertNotNull("XcMailr not reachable", response);
-        Assert.assertEquals("Temporary Email could not be accessed", 200, response.code());
+        Assert.assertEquals("Temporary Email could not be created", 200, response.code());
         LOGGER.debug("E-mail created: \"" + email + "\"");
         response.close();
         return responseBody;
@@ -77,11 +74,11 @@ public class XcMailrApi
      *            the e-mail address which should receive the expected e-mail
      * @param subject
      *            the received e-mail's subject. May also be a regular expression.
-     * @return a String containing a JSON Object of the received message
+     * @return a String containing a JSON array with the received message
      */
     public static String retrieveLastEmailBySubject(String email, String subject)
     {
-        return retrieveLastEmail(email, null, subject);
+        return fetchEmails(email, null, subject, null, null, null, true);
     }
 
     /**
@@ -91,17 +88,11 @@ public class XcMailrApi
      *            the e-mail address which should receive the expected e-mail
      * @param sender
      *            the received e-mail's sender. May also be a regular expression.
-     * @return a String containing a JSON Object of the received message
+     * @return a String containing a JSON array of the received message
      */
     public static String retrieveLastEmailBySender(String email, String sender)
     {
-        return retrieveLastEmail(email, sender, null);
-    }
-
-    private static String retrieveLastEmail(String email, String sender, String subject)
-    {
-        String response = fetchEmails(email, sender, subject, null, null, null, true);
-        return new JsonParser().parse(response).getAsJsonArray().get(0).getAsJsonObject().toString();
+        return fetchEmails(email, sender, null, null, null, null, true);
     }
 
     /**
@@ -175,38 +166,6 @@ public class XcMailrApi
                 LOGGER.error("Interrupted");
             }
         }
-    }
-
-    private static StringBuilder readResponse(InputStream inputStream)
-    {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = null;
-        try
-        {
-            br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-            sb = new StringBuilder();
-            for (String output = br.readLine(); output != null; output = br.readLine())
-            {
-                sb.append(output);
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException("couldn't read the response from server", e);
-        }
-        finally
-        {
-            try
-            {
-                br.close();
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException("error while closing the buffered readed", e);
-            }
-        }
-        return sb;
     }
 
     private static Response fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent,

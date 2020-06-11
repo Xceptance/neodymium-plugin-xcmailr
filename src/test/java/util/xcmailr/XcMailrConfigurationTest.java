@@ -41,7 +41,8 @@ public class XcMailrConfigurationTest extends AbstractTest
         properties.put("xcmailr.temporaryMailValidMinutes", temporaryMailValidMinutes);
         writeMapToPropertiesFile(properties, tempConfigFile2);
         ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
-        Assert.assertEquals(Integer.parseInt(temporaryMailValidMinutes), ConfigFactory.create(XcMailrConfiguration.class).temporaryMailValidMinutes());
+        Assert.assertEquals(Integer.parseInt(temporaryMailValidMinutes),
+                            ConfigFactory.create(XcMailrConfiguration.class).temporaryMailValidMinutes());
     }
 
     @Test
