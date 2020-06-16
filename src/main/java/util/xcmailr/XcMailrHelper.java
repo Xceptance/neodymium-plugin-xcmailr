@@ -15,51 +15,65 @@ import com.google.gson.JsonParser;
 
 public class XcMailrHelper
 {
-
-    public static String getFirstMailsTextContent(String resonseBody)
+    /**
+     * Retrieves the text content of the first e-mail from the JSON response body.
+     * 
+     * @param responseBody
+     *            is the return value of XcMailApi.fetchEmails() and its sugar methods
+     * @return a String containing the response of an XcMailr API call, e.g. <code>XcMailrApi.fetchEmails</copde>
+     */
+    public static String getFirstMailsTextContent(String responseBody)
     {
-        return getFieldOfMailObject(resonseBody, 0, "textContent");
+        return getFieldOfMailObject(responseBody, "textContent");
     }
 
+    /**
+     * Retrieves the HTML content of the first e-mail from the JSON response body. *
+     * 
+     * @param responseBody
+     *            is the return value of XcMailApi.fetchEmails() and its sugar methods
+     * @return a String containing the response of an XcMailr API call, e.g. <code>XcMailrApi.fetchEmails</copde>
+     */
     public static String getFirstMailsHtmlContent(String responseBody)
     {
-        return getFieldOfMailObject(responseBody, 0, "htmlContent");
+        return getFieldOfMailObject(responseBody, "htmlContent");
     }
 
-    private static String getFieldOfMailObject(String resonseBody, int emailNo, String fieldName)
+    private static String getFieldOfMailObject(String responseBody, String fieldName)
     {
-        Assert.assertNotNull(resonseBody);
+        Assert.assertNotNull(responseBody);
         final JsonParser parser = new JsonParser();
-        JsonElement tempJsonElement = parser.parse(resonseBody);
-        JsonArray emailArray;
-        JsonObject emailObject = null;
+        JsonElement tempJsonElement = parser.parse(responseBody);
 
-        if (tempJsonElement.isJsonArray())
-        {
-            emailArray = tempJsonElement.getAsJsonArray();
-            if (emailArray.size() == 1)
-            {
-                tempJsonElement = emailArray.get(0);
-                if (tempJsonElement.isJsonObject())
-                {
-                    emailObject = tempJsonElement.getAsJsonObject();
-                }
-            }
-        }
+        Assert.assertTrue(tempJsonElement.isJsonArray());
+
+        JsonArray emailArray = tempJsonElement.getAsJsonArray();
+        tempJsonElement = emailArray.get(0);
+
+        Assert.assertTrue(tempJsonElement.isJsonObject());
+
+        final JsonObject emailObject = tempJsonElement.getAsJsonObject();
+
         Assert.assertNotNull(emailObject);
 
         if (emailObject.has(fieldName))
         {
-            String encodedString = emailObject.get(fieldName).getAsString();
+            final String encodedString = emailObject.get(fieldName).getAsString();
 
-            byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
-            String decodedString = new String(decodedBytes);
+            final byte[] decodedBytes = Base64.getDecoder().decode(encodedString);
+            final String decodedString = new String(decodedBytes);
 
             return decodedString;
         }
         return null;
     }
 
+    /**
+     * Open the supplied HTML content with the current web driver.
+     * 
+     * @param htmlContent
+     *            a String containing the HTML that should be opened in the current web driver
+     */
     public static void openHtmlContentWithCurrentWebDriver(String htmlContent)
     {
         File tempHtmlContentFile = null;
@@ -73,12 +87,10 @@ public class XcMailrHelper
             fileWriter.append(htmlContent);
             fileWriter.close();
         }
-        catch (IOException e)
+        catch (final IOException e)
         {
             e.printStackTrace();
         }
         Selenide.open("file://" + tempHtmlContentFile.getAbsolutePath());
-        Selenide.sleep(4000);
-
     }
 }

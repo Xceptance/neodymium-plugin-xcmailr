@@ -1,181 +1,117 @@
 package util.xcmailr;
 
 import java.io.IOException;
-import java.util.Map;
-import java.util.Properties;
+import java.util.Base64;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import javax.mail.Address;
-import javax.mail.BodyPart;
-import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.Multipart;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeBodyPart;
-import javax.mail.internet.MimeMessage;
-import javax.mail.internet.MimeMultipart;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.ClientProtocolException;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import com.codeborne.selenide.Selenide;
-import com.google.common.collect.Maps;
-import com.xceptance.neodymium.NeodymiumRunner;
-import com.xceptance.neodymium.module.statement.browser.multibrowser.Browser;
-import com.xceptance.neodymium.module.statement.browser.multibrowser.SuppressBrowsers;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
-import net.minidev.json.JSONArray;
-import net.minidev.json.JSONObject;
-import net.minidev.json.parser.JSONParser;
-import net.minidev.json.parser.ParseException;
 import util.xcmailr.data.EmailAccount;
-import util.xcmailr.data.SmtpAuthenticator;
-import util.xcmailr.pageobjects.XcmailrLoginPage;
-import util.xcmailr.pageobjects.XcmailrOverviewPage;
-import util.xcmailr.util.Base64Decoder;
+import util.xcmailr.util.Credentials;
+import util.xcmailr.util.SendEmail;
 import util.xcmailr.util.SendRequest;
 
-@Browser("Chrome_headless")
-@RunWith(NeodymiumRunner.class)
 public class XcMailrApiTest extends AbstractTest
 {
-    Map<String, String> headers = Maps.newHashMap();
+    protected static final Credentials CREDENTIALS = ConfigFactory.create(Credentials.class, System.getenv());
 
-    Map<String, String> formParams = Maps.newHashMap();
+    protected static final String validMinutes = "1";
 
-    private final String xcmailrEmail = System.getenv("XCMAILR_EMAIL") != null ? System.getenv("XCMAILR_EMAIL") : "";
+    protected static String tempEmail;
 
-    private final String xcmailrPassword = System.getenv("XCMAILR_PASSWORD") != null ? System.getenv("XCMAILR_PASSWORD") : "";
-
-    private final String tempEmail = "testTest@varmail.net";
-
-    private final int validMinutes = 3;
-
-    private static final EmailAccount emailAccount = new EmailAccount(System.getenv("EMAIL") != null ? System.getenv("EMAIL")
-                                                                                                     : "", System.getenv("EMAIL_LOGIN") != null ? System.getenv("EMAIL_LOGIN")
-                                                                                                                                                : "", System.getenv("EMAIL_PASSWORD") != null ? System.getenv("EMAIL_PASSWORD")
-                                                                                                                                                                                              : "", System.getenv("EMAIL_SERVER") != null ? System.getenv("EMAIL_SERVER")
-                                                                                                                                                                                                                                          : "", 25, false, true);
-
-    @Before
-    public void configureApiToken()
+    @BeforeClass
+    public static void configureApiToken() throws ClientProtocolException, IOException
     {
+        tempEmail = randomEmail("test", "varmail.net");
+
         final String apiToken = System.getenv("XCMAILR_TOKEN");
         if (apiToken != null)
         {
-            properties2.put("xcmailr.apiToken", apiToken);
+            properties.put("xcmailr.apiToken", apiToken);
         }
-        properties2.put("xcmailr.temporaryMailValidMinutes", String.valueOf(validMinutes));
-        writeMapToPropertiesFile(properties2, tempConfigFile2);
-        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
+        properties.put("xcmailr.temporaryMailValidMinutes", validMinutes);
+        savePropertiesAndApply();
+
+        SendRequest.login(CREDENTIALS.xcmailrEmail(), CREDENTIALS.xcmailrPassword());
     }
 
     @After
     public void deleteTempEmail() throws ClientProtocolException, IOException
     {
-        SendRequest.login(xcmailrEmail, xcmailrPassword);
         SendRequest.deleteTempEmail(tempEmail);
     }
 
     @Test
-    public void testEmailCreated()
+    public void testEmailCreated() throws IOException
     {
         XcMailrApi.createTemporaryEmail(tempEmail);
-
-        new XcmailrLoginPage().login(xcmailrEmail,
-                                     xcmailrPassword)
-                              .openMailOverview().validateEmailCreated(tempEmail);
+        Assert.assertTrue(SendRequest.emailExists(tempEmail));
     }
 
     @Test
-    public void testEmailExpired()
+    public void testEmailExpired() throws IOException
     {
-        XcMailrApi.createTemporaryEmail(tempEmail);
-        XcmailrOverviewPage mailOverview = new XcmailrLoginPage().login(xcmailrEmail, xcmailrPassword).openMailOverview();
-        mailOverview.validateEmailIsActive(tempEmail);
-        Selenide.sleep((validMinutes + 1) * 60000);
-        Selenide.refresh();
-        Selenide.sleep(1000);
-        mailOverview.validateEmailIsExpired(tempEmail);
+        String response = XcMailrApi.createTemporaryEmail(tempEmail);
+
+        Pattern validMinutesPatters = Pattern.compile("<div class=\"email-validity-minutes\">(\\d)</div>");
+        Matcher matcher = validMinutesPatters.matcher(response);
+        while (matcher.find())
+        {
+            Assert.assertEquals(validMinutes, matcher.group(1));
+        }
     }
 
-    @SuppressBrowsers
     @Test
-    public void testRetrieveLastEmailBySubject() throws MessagingException, ParseException
+    public void testRetrieveLastEmailBySubject() throws MessagingException, IOException
     {
         final String subject = "Test";
         final String textToSend = "Hi\nHow are you?)\nBye";
         XcMailrApi.createTemporaryEmail(tempEmail);
-        send(emailAccount, tempEmail, subject, textToSend);
-        JSONObject response = (JSONObject) ((JSONArray) new JSONParser(JSONParser.MODE_JSON_SIMPLE).parse(XcMailrApi.retrieveLastEmailBySubject(tempEmail,
-                                                                                                                                                subject))).get(0);
-        Assert.assertEquals(response.get("mailAddress").toString().replaceAll("\"", ""), tempEmail);
-        Assert.assertEquals(response.get("sender").toString().replaceAll("\"", ""), emailAccount.getEmail());
-        Assert.assertEquals(response.get("subject").toString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(Base64Decoder.decode(response.get("htmlContent").toString().replaceAll("\"", "")),
-                            textToSend);
-        Assert.assertEquals(Base64Decoder.decode(response.get("textContent").toString().replaceAll("\"", "")),
-                            textToSend);
+
+        final EmailAccount emailAccount = new EmailAccount(CREDENTIALS.smtpServerEmail(), CREDENTIALS.smtpServerLogin(),
+                                                           CREDENTIALS.smtpServerPassword(), CREDENTIALS.smtpServerHost(),
+                                                           CREDENTIALS.smtpServerPort(), false, true);
+
+        SendEmail.send(emailAccount, tempEmail, subject, textToSend);
+
+        String response = XcMailrApi.retrieveLastEmailBySubject(tempEmail, subject);
+        JsonObject message = new JsonParser().parse(response).getAsJsonArray().get(0).getAsJsonObject();
+
+        Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
+        Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
+        Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
+        Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
     }
 
-    /**
-     * Method to send message
-     * 
-     * @param messageContainer
-     *            message to send
-     * @param text
-     *            message text
-     * @throws MessagingException
-     */
-    public void send(EmailAccount emailAccount, String recipent, String subject, String text)
+    private String decodeAndNormalize(String text)
     {
-        Properties smtpProps = new Properties();
-        smtpProps.setProperty("mail.smtp.ssl.enable", Boolean.toString(emailAccount.isSsl()));
-        smtpProps.setProperty("mail.smtp.tls.enable", Boolean.toString(emailAccount.isTls()));
-        smtpProps.put("mail.smtp.host", emailAccount.getServer());
-        smtpProps.put("mail.smtp.auth", "true");
-        smtpProps.put("mail.stmp.port", emailAccount.getPort());
-        smtpProps.setProperty("mail.user", emailAccount.getLogin());
+        return new String(Base64.getDecoder().decode(text)).replaceAll(String.valueOf((char) 13), "");
+    }
 
-        // create session
-        SmtpAuthenticator smtpAuthenticator = new SmtpAuthenticator(emailAccount.getLogin(), emailAccount.getPassword());
-        Session session = Session.getInstance(smtpProps, smtpAuthenticator);
-        // Create the message part
-        MimeMessage message = new MimeMessage(session);
+    private static String randomEmail(String prefix, String domain)
+    {
+        final String uuid = UUID.randomUUID().toString();
+        final String data = uuid.replaceAll("-", "");
+        final StringBuilder sb = new StringBuilder(42);
 
-        try
-        {
+        sb.append(prefix);
+        sb.append(data.concat(data).substring(0, 12));
+        sb.append("@");
+        sb.append(domain);
 
-            Address[] addresses =
-            {
-              new InternetAddress(recipent)
-            };
-            BodyPart messageBodyPartText = new MimeBodyPart();
-            messageBodyPartText.setText(text);
-            BodyPart messageBodyPartHtml = new MimeBodyPart();
-            messageBodyPartHtml.setContent(text, "text/html; charset=utf-8");
-            Multipart multipart = new MimeMultipart();
-            multipart.addBodyPart(messageBodyPartText);
-            multipart.addBodyPart(messageBodyPartHtml);
-
-            message.setRecipients(Message.RecipientType.TO, addresses);
-            message.setSubject(subject);
-            message.setFrom(new InternetAddress(emailAccount.getEmail()));
-            message.setContent(multipart);
-
-            // Send message
-            Transport.send(message);
-            session.getTransport().close();
-        }
-        catch (MessagingException e)
-        {
-            e.printStackTrace();
-        }
+        return sb.toString().toLowerCase();
     }
 }
