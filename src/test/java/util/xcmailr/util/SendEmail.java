@@ -23,7 +23,7 @@ public class SendEmail
      * Sends an e-mail from the specified <code>emailAccount</code> to the specified <code>recipient</code>.
      * 
      * @param emailAccount
-     *            is an <code>EmailAccount</code> object containing configuration of SMTP server and credentials for it
+     *            is an {@link EmailAccount} object with configuration of SMTP server and credentials for it
      * @param recipient
      *            e-mail address of recipient
      * @param subject

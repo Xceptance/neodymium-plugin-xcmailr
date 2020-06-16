@@ -47,7 +47,7 @@ public abstract class AbstractTest
         }
     }
 
-    protected static void writeProperties()
+    protected static void savePropertiesAndApply()
     {
         writeMapToPropertiesFile(properties, tempConfigFile2);
         ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);

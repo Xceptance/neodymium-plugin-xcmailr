@@ -42,7 +42,7 @@ public class XcMailrApiTest extends AbstractTest
             properties.put("xcmailr.apiToken", apiToken);
         }
         properties.put("xcmailr.temporaryMailValidMinutes", validMinutes);
-        writeProperties();
+        savePropertiesAndApply();
 
         SendRequest.login(CREDENTIALS.xcmailrEmail(), CREDENTIALS.xcmailrPassword());
     }
@@ -101,7 +101,7 @@ public class XcMailrApiTest extends AbstractTest
         return new String(Base64.getDecoder().decode(text)).replaceAll(String.valueOf((char) 13), "");
     }
 
-    private static String randomEmail(String prefix, String domian)
+    private static String randomEmail(String prefix, String domain)
     {
         final String uuid = UUID.randomUUID().toString();
         final String data = uuid.replaceAll("-", "");
@@ -110,7 +110,7 @@ public class XcMailrApiTest extends AbstractTest
         sb.append(prefix);
         sb.append(data.concat(data).substring(0, 12));
         sb.append("@");
-        sb.append(domian);
+        sb.append(domain);
 
         return sb.toString().toLowerCase();
     }

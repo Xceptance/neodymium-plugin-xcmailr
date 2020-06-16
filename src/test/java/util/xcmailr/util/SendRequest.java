@@ -126,7 +126,10 @@ public class SendRequest
         {
             try
             {
-                br.close();
+                if (br != null)
+                {
+                    br.close();
+                }
             }
             catch (IOException e)
             {
