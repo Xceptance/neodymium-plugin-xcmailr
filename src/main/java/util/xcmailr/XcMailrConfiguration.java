@@ -7,9 +7,9 @@ import org.aeonbits.owner.Mutable;
 
 @LoadPolicy(LoadType.MERGE)
 @Sources(
-{
-  "${xcmailr.temporaryConfigFile}", "file:config/dev-xcmailr.properties", "file:config/xcmailr.properties"
-})
+    {
+        "${xcmailr.temporaryConfigFile}", "file:config/dev-xcmailr.properties", "file:config/xcmailr.properties"
+    })
 
 public interface XcMailrConfiguration extends Mutable
 {

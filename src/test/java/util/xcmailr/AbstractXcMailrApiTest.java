@@ -1,36 +1,39 @@
 package util.xcmailr;
 
 import java.io.IOException;
+import java.util.Base64;
+import java.util.UUID;
 
 import org.aeonbits.owner.ConfigFactory;
-import org.aeonbits.owner.util.Base64;
 import org.apache.http.client.ClientProtocolException;
 import org.junit.After;
-import org.junit.Before;
+import org.junit.BeforeClass;
 
 import util.xcmailr.util.Credentials;
 import util.xcmailr.util.SendRequest;
 
 public class AbstractXcMailrApiTest extends AbstractTest
 {
-    protected final String xcmailrEmail = CREDENTIALS.xcmailrEmail();
-
-    protected final String xcmailrPassword = CREDENTIALS.xcmailrPassword();
-
     protected static final Credentials CREDENTIALS = ConfigFactory.create(Credentials.class, System.getenv());
 
-    protected final String tempEmail = "testTest1@varmail.net";
+    protected static final String validMinutes = "1";
 
-    @Before
-    public void configureApiToken()
+    protected static String tempEmail;
+
+    @BeforeClass
+    public static void configureApiToken() throws ClientProtocolException, IOException
     {
+        tempEmail = randomEmail("test", "varmail.net");
+
         final String apiToken = System.getenv("XCMAILR_TOKEN");
         if (apiToken != null)
         {
-            writeProperty("xcmailr.apiToken", apiToken);
+            properties.put("xcmailr.apiToken", apiToken);
         }
-        writeProperty("xcmailr.temporaryMailValidMinutes", "3");
-        SendRequest.login(xcmailrEmail, xcmailrPassword);
+        properties.put("xcmailr.temporaryMailValidMinutes", validMinutes);
+        savePropertiesAndApply();
+
+        SendRequest.login(CREDENTIALS.xcmailrEmail(), CREDENTIALS.xcmailrPassword());
     }
 
     @After
@@ -39,8 +42,22 @@ public class AbstractXcMailrApiTest extends AbstractTest
         SendRequest.deleteTempEmail(tempEmail);
     }
 
-    protected String decode(String text)
+    protected String decodeAndNormalize(String text)
     {
-        return new String(Base64.decode(text)).replaceAll(String.valueOf((char) 13), "");
+        return new String(Base64.getDecoder().decode(text)).replaceAll(String.valueOf((char) 13), "");
+    }
+
+    protected static String randomEmail(String prefix, String domain)
+    {
+        final String uuid = UUID.randomUUID().toString();
+        final String data = uuid.replaceAll("-", "");
+        final StringBuilder sb = new StringBuilder(42);
+
+        sb.append(prefix);
+        sb.append(data.concat(data).substring(0, 12));
+        sb.append("@");
+        sb.append(domain);
+
+        return sb.toString().toLowerCase();
     }
 }

@@ -115,7 +115,7 @@ public class EmailAccount
     @Override
     public String toString()
     {
-        return "EmailAccount [email=" + email + ", login=" + login + ", password=" + password + ", server=" + server + ", port=" + port + ", ssl=" + ssl
-               + ", tls=" + tls + "]";
+        return "EmailAccount [email=" + email + ", login=" + login + ", password=" + password + ", server=" + server + ", port=" + port +
+               ", ssl=" + ssl + ", tls=" + tls + "]";
     }
 }

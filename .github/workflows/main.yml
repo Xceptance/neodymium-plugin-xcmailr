@@ -23,13 +23,9 @@ jobs:
         GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
         XCMAILR_EMAIL: ${{ secrets.XCMAILR_EMAIL }}
         XCMAILR_PASSWORD: ${{ secrets.XCMAILR_PASSWORD }}
-        EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
-        EMAIL_LOGIN: ${{ secrets.EMAIL_LOGIN }}
-        EMAIL: ${{ secrets.EMAIL }}
-        EMAIL_SERVER: ${{ secrets.EMAIL_SERVER}}
+        SMTP_SERVER_PASSWORD: ${{ secrets.SMTP_SERVER_PASSWORD }}
+        SMTP_SERVER_LOGIN: ${{ secrets.SMTP_SERVER_LOGIN }}
+        SMTP_SERVER_EMAIL: ${{ secrets.SMTP_SERVER_EMAIL }}
+        SMTP_SERVER_HOST: ${{ secrets.SMTP_SERVER_HOST}}
         XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
-      run: mvn -B clean test allure:report
-    - uses: actions/upload-artifact@v1
-      with:
-          name: allure-report-basic
-          path: target/site
+      run: mvn -B clean test

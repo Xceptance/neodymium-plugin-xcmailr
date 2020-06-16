@@ -7,9 +7,9 @@ import org.aeonbits.owner.Mutable;
 
 @LoadPolicy(LoadType.MERGE)
 @Sources(
-{
-  "file:config/dev-credentials.properties", "file:config/credentials.properties"
-})
+    {
+        "file:config/dev-credentials.properties", "file:config/credentials.properties"
+    })
 
 public interface Credentials extends Mutable
 {
@@ -19,19 +19,19 @@ public interface Credentials extends Mutable
     @Key("XCMAILR_PASSWORD")
     public String xcmailrPassword();
 
-    @Key("EMAIL")
-    public String senderEmail();
+    @Key("SMTP_SERVER_EMAIL")
+    public String smtpServerEmail();
 
-    @Key("EMAIL_PASSWORD")
-    public String senderPassword();
+    @Key("SMTP_SERVER_PASSWORD")
+    public String smtpServerPassword();
 
-    @Key("EMAIL_LOGIN")
-    public String senderLogin();
+    @Key("SMTP_SERVER_LOGIN")
+    public String smtpServerLogin();
 
-    @Key("EMAIL_SERVER")
-    public String senderServer();
+    @Key("SMTP_SERVER_HOST")
+    public String smtpServerHost();
 
-    @Key("SENDER_PORT")
+    @Key("SMTP_SERVER_PORT")
     @DefaultValue("25")
-    public int senderPort();
+    public int smtpServerPort();
 }

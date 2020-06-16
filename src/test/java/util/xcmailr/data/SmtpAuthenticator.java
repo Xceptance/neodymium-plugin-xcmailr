@@ -3,26 +3,32 @@ package util.xcmailr.data;
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;
 
-public class SmtpAuthenticator extends Authenticator {
-	private String userAuth;
-	private String password;
+public class SmtpAuthenticator extends Authenticator
+{
+    private String userAuth;
 
-	public SmtpAuthenticator(String userAuth, String password) {
-		this.userAuth = userAuth;
-		this.password = password;
-	}
+    private String password;
 
-	@Override
-	public PasswordAuthentication getPasswordAuthentication() {
-		return new PasswordAuthentication(userAuth, password);
-	}
+    public SmtpAuthenticator(String userAuth, String password)
+    {
+        this.userAuth = userAuth;
+        this.password = password;
+    }
 
-	public String getUserAuth() {
-		return userAuth;
-	}
+    @Override
+    public PasswordAuthentication getPasswordAuthentication()
+    {
+        return new PasswordAuthentication(userAuth, password);
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getUserAuth()
+    {
+        return userAuth;
+    }
+
+    public String getPassword()
+    {
+        return password;
+    }
 
 }

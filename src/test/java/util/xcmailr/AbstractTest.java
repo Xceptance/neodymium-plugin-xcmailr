@@ -14,16 +14,17 @@ import com.google.common.base.Joiner;
 
 public abstract class AbstractTest
 {
-    protected Map<String, String> properties2 = new HashMap<>();
+    protected static Map<String, String> properties = new HashMap<>();
 
-    protected final String fileLocation = "config/temp-xcmailr.properties";
+    protected static final String fileLocation = "config/temp-xcmailr.properties";
 
-    protected File tempConfigFile2 = new File("./" + fileLocation);
+    protected static File tempConfigFile2 = new File("./" + fileLocation);
 
     @After
     public void deleteTempFile()
     {
         deleteTempFile(tempConfigFile2);
+        properties.clear();
     }
 
     /**
@@ -40,19 +41,16 @@ public abstract class AbstractTest
             catch (final Exception e)
             {
                 // double apostrophe needed, otherwise MessageFormat.format() won't work
-                System.out.println(MessageFormat.format(
-                                                        "Coundn''t delete temporary file: ''{0}'' caused by {1}",
+                System.out.println(MessageFormat.format("Couldn''t delete temporary file: ''{0}'' caused by {1}",
                                                         tempFile.getAbsoluteFile(), e));
             }
         }
     }
 
-    protected void writeProperty(String propertyName, String propertyValue)
+    protected static void savePropertiesAndApply()
     {
-        properties2.put(propertyName, propertyValue);
-        writeMapToPropertiesFile(properties2, tempConfigFile2);
+        writeMapToPropertiesFile(properties, tempConfigFile2);
         ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
-        XcMailrApi.resetConfigurationsForThread();
     }
 
     public static void writeMapToPropertiesFile(Map<String, String> map, File file)

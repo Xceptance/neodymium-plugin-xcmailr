@@ -1,5 +1,7 @@
 package util.xcmailr;
 
+import java.io.IOException;
+
 import javax.mail.MessagingException;
 
 import org.junit.Assert;
@@ -20,10 +22,12 @@ public class XcMailRetrieveEmailsTest extends AbstractXcMailrApiTest
 
     private final String textToSend = "Hi\nHow are you?)\nBye";
 
-    private final EmailAccount emailAccount = new EmailAccount(CREDENTIALS.senderEmail(), CREDENTIALS.senderLogin(), CREDENTIALS.senderPassword(), CREDENTIALS.senderServer(), CREDENTIALS.senderPort(), false, true);
+    private final EmailAccount emailAccount = new EmailAccount(CREDENTIALS.smtpServerEmail(), CREDENTIALS.smtpServerLogin(),
+                                                               CREDENTIALS.smtpServerPassword(), CREDENTIALS.smtpServerHost(),
+                                                               CREDENTIALS.smtpServerPort(), false, true);
 
     @Before
-    public void createTempEmailAndSendMessage()
+    public void createTempEmailAndSendMessage() throws IOException
     {
         XcMailrApi.createTemporaryEmail(tempEmail);
         SendEmail.send(emailAccount, tempEmail, subject, textToSend);
@@ -39,8 +43,8 @@ public class XcMailRetrieveEmailsTest extends AbstractXcMailrApiTest
         Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
         Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
         Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(decode(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
-        Assert.assertEquals(decode(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
     }
 
     @Test
@@ -53,8 +57,8 @@ public class XcMailRetrieveEmailsTest extends AbstractXcMailrApiTest
         Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
         Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
         Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(decode(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
-        Assert.assertEquals(decode(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
     }
 
     @Test
@@ -67,8 +71,8 @@ public class XcMailRetrieveEmailsTest extends AbstractXcMailrApiTest
         Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
         Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
         Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(decode(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
-        Assert.assertEquals(decode(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
     }
 
     @Test
@@ -81,8 +85,8 @@ public class XcMailRetrieveEmailsTest extends AbstractXcMailrApiTest
         Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
         Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
         Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(decode(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
-        Assert.assertEquals(decode(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
     }
 
     @Test
@@ -95,8 +99,8 @@ public class XcMailRetrieveEmailsTest extends AbstractXcMailrApiTest
         Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
         Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
         Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(decode(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
-        Assert.assertEquals(decode(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
     }
 
     @Test
@@ -115,8 +119,8 @@ public class XcMailRetrieveEmailsTest extends AbstractXcMailrApiTest
             Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
             Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
             Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
-            Assert.assertEquals(decode(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
-            Assert.assertEquals(decode(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
+            Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
+            Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
         }
     }
 }
