@@ -9,7 +9,7 @@ import org.junit.Test;
 
 import util.xcmailr.util.SendRequest;
 
-public class XcMailrApiTest extends AbstractXcMailrApiTest
+public class XcMailrApiTest extends EmailCreationApiTest
 {
     @Test
     public void testEmailCreated() throws IOException

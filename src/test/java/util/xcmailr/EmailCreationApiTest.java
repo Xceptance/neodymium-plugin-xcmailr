@@ -12,7 +12,7 @@ import org.junit.BeforeClass;
 import util.xcmailr.util.Credentials;
 import util.xcmailr.util.SendRequest;
 
-public class AbstractXcMailrApiTest extends AbstractTest
+public class EmailCreationApiTest extends AbstractTest
 {
     protected static final Credentials CREDENTIALS = ConfigFactory.create(Credentials.class, System.getenv());
 
@@ -42,7 +42,7 @@ public class AbstractXcMailrApiTest extends AbstractTest
         SendRequest.deleteTempEmail(tempEmail);
     }
 
-    protected String decodeAndNormalize(String text)
+    protected static String decodeAndNormalize(String text)
     {
         return new String(Base64.getDecoder().decode(text)).replaceAll(String.valueOf((char) 13), "");
     }
