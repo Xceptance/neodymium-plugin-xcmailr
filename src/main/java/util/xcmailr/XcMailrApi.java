@@ -49,7 +49,7 @@ public class XcMailrApi
      * @param email
      *            the e-mail address <br>
      *            The domain of the e-mail must match the XcMailr's available domains.
-     * @return server response with information about the temporary e-mail
+     * @return a String containing the server's response with information about the temporary e-mail
      * @throws IOException
      *             in case if there was an error while reading the response from server
      */

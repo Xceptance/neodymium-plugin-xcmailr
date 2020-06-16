@@ -115,7 +115,7 @@
 						<configuration>
 							<forkCount>2</forkCount>
 							<includes>
-								<include>util.xcmailr/**/*Test.java
+								<include>util/xcmailr/**/*Test.java
 								</include>
 							</includes>
 						</configuration>
