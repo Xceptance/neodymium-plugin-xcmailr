@@ -41,7 +41,6 @@
 		<maven.compiler.target>1.8</maven.compiler.target>
 		<surefire.version>2.22.2</surefire.version>
 		<aspectj.version>1.9.5</aspectj.version>
-		<allure.version>2.10.0</allure.version>
 		<neodymium.version>3.6.0</neodymium.version>
 	</properties>
 
@@ -56,8 +55,6 @@
 					<argLine>-javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"
 					</argLine>
 					<systemPropertyVariables>
-						<allure.results.directory>${project.build.directory}/allure-results
-						</allure.results.directory>
 						<selenide.reports>${project.build.directory}/selenide-results
 						</selenide.reports>
 					</systemPropertyVariables>

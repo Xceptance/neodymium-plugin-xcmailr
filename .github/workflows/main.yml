@@ -28,8 +28,4 @@ jobs:
         EMAIL: ${{ secrets.EMAIL }}
         EMAIL_SERVER: ${{ secrets.EMAIL_SERVER}}
         XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
-      run: mvn -B clean test allure:report
-    - uses: actions/upload-artifact@v1
-      with:
-          name: allure-report-basic
-          path: target/site
+      run: mvn -B clean test
