@@ -6,6 +6,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.codeborne.selenide.Selenide;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -13,7 +14,7 @@ import com.google.gson.JsonParser;
 import util.xcmailr.data.EmailAccount;
 import util.xcmailr.util.SendEmail;
 
-public class XcMailrRetrieveEmailsTest extends EmailCreationApiTest
+public class XcMailrRetrieveEmailsTest extends AbstractXcmailrApiTest
 {
     private final String subject = "Test";
 
@@ -38,10 +39,7 @@ public class XcMailrRetrieveEmailsTest extends EmailCreationApiTest
     public void testRetrieveLastEmailBySubject()
     {
         String response = XcMailrApi.retrieveLastEmailBySubject(tempEmail, subject);
-        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        JsonObject message = messagesArray.get(0).getAsJsonObject();
-
-        validateMessage(message);
+        validateMessage(parseMessage(response));
     }
 
     /**
@@ -52,10 +50,7 @@ public class XcMailrRetrieveEmailsTest extends EmailCreationApiTest
     public void testRetrieveLastEmailBySender()
     {
         String response = XcMailrApi.retrieveLastEmailBySender(tempEmail, emailAccount.getEmail());
-        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        JsonObject message = messagesArray.get(0).getAsJsonObject();
-
-        validateMessage(message);
+        validateMessage(parseMessage(response));
     }
 
     /**
@@ -66,10 +61,7 @@ public class XcMailrRetrieveEmailsTest extends EmailCreationApiTest
     {
         // fetch last received e-mail
         String response = XcMailrApi.fetchEmails(tempEmail, null, null, null, null, null, true);
-        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        JsonObject message = messagesArray.get(0).getAsJsonObject();
-
-        validateMessage(message);
+        validateMessage(parseMessage(response));
     }
 
     /**
@@ -80,10 +72,7 @@ public class XcMailrRetrieveEmailsTest extends EmailCreationApiTest
     {
         // fetch last received e-mail with specified plain text
         String response = XcMailrApi.fetchEmails(tempEmail, null, null, textToSend, null, null, true);
-        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        JsonObject message = messagesArray.get(0).getAsJsonObject();
-
-        validateMessage(message);
+        validateMessage(parseMessage(response));
     }
 
     /**
@@ -94,10 +83,7 @@ public class XcMailrRetrieveEmailsTest extends EmailCreationApiTest
     {
         // fetch last received e-mail with specified HTML text
         String response = XcMailrApi.fetchEmails(tempEmail, null, null, null, textToSend, null, true);
-        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        JsonObject message = messagesArray.get(0).getAsJsonObject();
-
-        validateMessage(message);
+        validateMessage(parseMessage(response));
     }
 
     /**
@@ -107,11 +93,11 @@ public class XcMailrRetrieveEmailsTest extends EmailCreationApiTest
     public void fetchEmailsFromTempEmail()
     {
         SendEmail.send(emailAccount, tempEmail, subject, textToSend);
-
+        Selenide.sleep(1000);
         // fetch all received e-mails
         String response = XcMailrApi.fetchEmails(tempEmail, null, null, null, null, null, false);
         JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        Assert.assertEquals(messagesArray.size(), 2);
+        Assert.assertEquals(2, messagesArray.size());
 
         for (int i = 0; i < 2; i++)
         {
@@ -119,6 +105,12 @@ public class XcMailrRetrieveEmailsTest extends EmailCreationApiTest
 
             validateMessage(message);
         }
+    }
+
+    private JsonObject parseMessage(String response)
+    {
+        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
+        return messagesArray.get(0).getAsJsonObject();
     }
 
     private void validateMessage(JsonObject message)
