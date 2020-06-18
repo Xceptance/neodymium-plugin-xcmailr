@@ -7,24 +7,23 @@ import java.util.UUID;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.ClientProtocolException;
 import org.junit.After;
+import org.junit.Before;
 import org.junit.BeforeClass;
 
 import util.xcmailr.util.Credentials;
 import util.xcmailr.util.SendRequest;
 
-public class AbstractXcmailrApiTest extends AbstractTest
+public abstract class AbstractXcmailrApiTest extends AbstractTest
 {
     protected static final Credentials CREDENTIALS = ConfigFactory.create(Credentials.class, System.getenv());
 
     protected static final String validMinutes = "1";
 
-    protected static String tempEmail;
+    protected String tempEmail;
 
     @BeforeClass
     public static void configureApiToken() throws ClientProtocolException, IOException
     {
-        tempEmail = randomEmail("test", "varmail.net");
-
         final String apiToken = System.getenv("XCMAILR_TOKEN");
         if (apiToken != null)
         {
@@ -34,6 +33,12 @@ public class AbstractXcmailrApiTest extends AbstractTest
         savePropertiesAndApply();
 
         SendRequest.login(CREDENTIALS.xcmailrEmail(), CREDENTIALS.xcmailrPassword());
+    }
+
+    @Before
+    public void createTempEmail()
+    {
+        tempEmail = randomEmail("test", "varmail.net");
     }
 
     @After
