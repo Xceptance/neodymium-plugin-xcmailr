@@ -13,7 +13,7 @@ import org.junit.BeforeClass;
 import util.xcmailr.util.Credentials;
 import util.xcmailr.util.SendRequest;
 
-public abstract class AbstractXcmailrApiTest extends AbstractTest
+public abstract class AbstractXcMailrApiTest extends AbstractTest
 {
     protected static final Credentials CREDENTIALS = ConfigFactory.create(Credentials.class, System.getenv());
 

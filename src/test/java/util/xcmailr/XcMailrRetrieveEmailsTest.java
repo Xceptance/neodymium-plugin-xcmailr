@@ -14,7 +14,7 @@ import com.google.gson.JsonParser;
 import util.xcmailr.data.EmailAccount;
 import util.xcmailr.util.SendEmail;
 
-public class XcMailrRetrieveEmailsTest extends AbstractXcmailrApiTest
+public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
 {
     private final String subject = "Test";
 
