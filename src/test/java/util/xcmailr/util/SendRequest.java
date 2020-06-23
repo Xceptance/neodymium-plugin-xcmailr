@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpGet;
@@ -44,7 +45,11 @@ public class SendRequest
             postRequest.setEntity(entity);
 
             final HttpResponse response = httpClient.execute(postRequest);
-
+            System.out.println(readResponse(response.getEntity().getContent()).toString());
+            for (Header header : response.getAllHeaders())
+            {
+                System.out.println(header.getName() + " : " + header.getValue());
+            }
             postRequest.releaseConnection();
         }
         catch (IOException e)
@@ -115,7 +120,7 @@ public class SendRequest
             sb = new StringBuilder();
             for (String output = br.readLine(); output != null; output = br.readLine())
             {
-                sb.append(output);
+                sb.append(output + "\n");
             }
         }
         catch (IOException e)
