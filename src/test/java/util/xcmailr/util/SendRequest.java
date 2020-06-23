@@ -109,7 +109,7 @@ public class SendRequest
         }
     }
 
-    private static StringBuilder readResponse(InputStream inputStream)
+    public static StringBuilder readResponse(InputStream inputStream)
     {
         StringBuilder sb = new StringBuilder();
         BufferedReader br = null;
