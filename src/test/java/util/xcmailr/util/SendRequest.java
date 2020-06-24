@@ -1,76 +1,52 @@
 package util.xcmailr.util;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.Header;
-import org.apache.http.HttpResponse;
-import org.apache.http.client.entity.UrlEncodedFormEntity;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.message.BasicNameValuePair;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.jayway.jsonpath.JsonPath;
 
+import okhttp3.FormBody;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 import util.xcmailr.XcMailrApi;
 
 public class SendRequest
 {
-    private static CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+    private static OkHttpClient client = new OkHttpClient.Builder().cookieJar(new CookieSession()).build();
 
     public static void login(String xcmailrEmail, String xcmailrPassword)
     {
+        RequestBody requestBody = new FormBody.Builder().add("mail", xcmailrEmail).add("password", xcmailrPassword).build();
+        Request request = new Request.Builder().url(StringUtils.appendIfMissing(XcMailrApi.getConfiguration().url(), "/") + "/login")
+                                               .addHeader("Accept-Language", "en-US").post(requestBody).build();
+
         try
         {
-            final HttpPost postRequest = new HttpPost(StringUtils.appendIfMissing(XcMailrApi.getConfiguration().url(), "/") + "/login");
-            postRequest.addHeader("Accept-Language", "en-US");
-
-            // add form parameters:
-            final List<BasicNameValuePair> formparams = new ArrayList<>();
-            formparams.add(new BasicNameValuePair("mail", xcmailrEmail));
-            formparams.add(new BasicNameValuePair("password", xcmailrPassword));
-
-            // encode form parameters and add
-            final UrlEncodedFormEntity entity = new UrlEncodedFormEntity(formparams);
-            postRequest.setEntity(entity);
-
-            final HttpResponse response = httpClient.execute(postRequest);
-            System.out.println(readResponse(response.getEntity().getContent()).toString());
-            for (Header header : response.getAllHeaders())
-            {
-                System.out.println(header.getName() + " : " + header.getValue());
-            }
-            postRequest.releaseConnection();
+            client.newCall(request).execute();
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
-    private static JsonObject getTempEmail(String tempEmail)
+    public static JsonObject getTempEmail(String tempEmail)
     {
+        Request request = new Request.Builder().url(StringUtils.appendIfMissing(XcMailrApi.getConfiguration().url(), "/") + "mail/getmails")
+                                               .build();
+
         try
         {
-            final HttpGet getRequest = new HttpGet(XcMailrApi.getConfiguration().url() + "/mail/getmails");
-
-            final HttpResponse response = httpClient.execute(getRequest);
-
-            final StringBuilder sb = readResponse(response.getEntity().getContent());
-            getRequest.releaseConnection();
+            Response response = client.newCall(request).execute();
+            final String sb = response.body().string();
             final String emails = JsonPath.read(sb.toString(), "$[?(@.fullAddress=='" + tempEmail + "')]").toString();
             final JsonArray emailObject = new JsonParser().parse(emails).getAsJsonArray();
-
             if (emailObject.size() > 0)
             {
                 return emailObject.get(0).getAsJsonObject();
@@ -79,8 +55,9 @@ public class SendRequest
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
+        return null;
     }
 
     public static boolean emailExists(String email)
@@ -96,51 +73,17 @@ public class SendRequest
     public static void deleteTempEmail(String tempEmail)
     {
         String id = getTempEmail(tempEmail).get("id").getAsString();
+        RequestBody reqbody = RequestBody.create(null, new byte[0]);
+        Request request = new Request.Builder().url(StringUtils.appendIfMissing(XcMailrApi.getConfiguration().url(), "/") + "mail/delete/" +
+                                                    id)
+                                               .method("POST", reqbody).header("Content-Length", "0").build();
         try
         {
-            final HttpPost postRequest = new HttpPost(XcMailrApi.getConfiguration().url() + "/mail/delete/" + id);
-            httpClient.execute(postRequest);
-
-            postRequest.releaseConnection();
+            client.newCall(request).execute();
         }
         catch (IOException e)
         {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
-    }
-
-    public static StringBuilder readResponse(InputStream inputStream)
-    {
-        StringBuilder sb = new StringBuilder();
-        BufferedReader br = null;
-        try
-        {
-            br = new BufferedReader(new InputStreamReader(inputStream, "UTF-8"));
-
-            sb = new StringBuilder();
-            for (String output = br.readLine(); output != null; output = br.readLine())
-            {
-                sb.append(output + "\n");
-            }
-        }
-        catch (IOException e)
-        {
-            throw new RuntimeException("couldn't read the response from server", e);
-        }
-        finally
-        {
-            try
-            {
-                if (br != null)
-                {
-                    br.close();
-                }
-            }
-            catch (IOException e)
-            {
-                throw new RuntimeException("error while closing the buffered readed", e);
-            }
-        }
-        return sb;
     }
 }
