@@ -70,8 +70,10 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void fetchLastEmailByTextContent()
     {
+        String textToRetrieve = textToSend.replaceAll("\\?", "\\\\?").replaceAll("\\)", "\\\\)").replaceAll("\\n", "\\\\r\\\\n");
+
         // fetch last received e-mail with specified plain text
-        String response = XcMailrApi.fetchEmails(tempEmail, null, null, textToSend, null, null, true);
+        String response = XcMailrApi.fetchEmails(tempEmail, null, null, textToRetrieve, null, null, true);
         validateMessage(parseMessage(response));
     }
 
@@ -81,8 +83,10 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void fetchLastEmailByHtmlContent()
     {
+        String textToRetrieve = textToSend.replaceAll("\\?", "\\\\?").replaceAll("\\)", "\\\\)").replaceAll("\\n", "\\\\r\\\\n");
+
         // fetch last received e-mail with specified HTML text
-        String response = XcMailrApi.fetchEmails(tempEmail, null, null, null, textToSend, null, true);
+        String response = XcMailrApi.fetchEmails(tempEmail, null, null, null, textToRetrieve, null, true);
         validateMessage(parseMessage(response));
     }
 
