@@ -53,13 +53,21 @@ public class XcMailrApi
      * @throws IOException
      *             in case if there was an error while reading the response from server
      */
-    public static String createTemporaryEmail(String email) throws IOException
+    public static String createTemporaryEmail(String email)
     {
         final String url = getConfiguration().url() + "/create/temporaryMail/" + getConfiguration().apiToken() + "/" + email + "/" +
                            getConfiguration().temporaryMailValidMinutes();
         final HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
         final Response response = callXcMailr(builder.build());
-        String responseBody = response.body().string();
+        String responseBody = "";
+        try
+        {
+            responseBody = response.body().string();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
 
         Assert.assertNotNull("XcMailr not reachable", response);
         Assert.assertEquals("Temporary Email could not be created", 200, response.code());
