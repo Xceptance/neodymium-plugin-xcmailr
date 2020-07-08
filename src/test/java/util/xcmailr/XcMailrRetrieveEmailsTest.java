@@ -91,6 +91,28 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     }
 
     /**
+     * assert that the validity of the pattern for text content will be checked before to make a request on server
+     */
+    @Test
+    public void fetchLastEmailByTextContentWithInvalidPattern()
+    {
+        Assert.assertThrows("entered pattern \"" + textToSend + "\" is invalid", RuntimeException.class, () -> {
+            XcMailrApi.fetchEmails(tempEmail, null, null, textToSend, null, null, true);
+        });
+    }
+
+    /**
+     * assert that the validity of the pattern for html content will be checked before to make a request on server
+     */
+    @Test
+    public void fetchLastEmailByHtmlContentWithInvalidPattern()
+    {
+        Assert.assertThrows("entered pattern \"" + textToSend + "\" is invalid", RuntimeException.class, () -> {
+            XcMailrApi.fetchEmails(tempEmail, null, null, null, textToSend, null, true);
+        });
+    }
+
+    /**
      * test that it's possible to fetch all received e-mails
      */
     @Test

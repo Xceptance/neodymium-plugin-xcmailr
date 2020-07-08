@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -126,6 +128,8 @@ public class XcMailrApi
     public static String fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String format,
                                      boolean lastMatch)
     {
+        assertPatternIsValid(textContent);
+        assertPatternIsValid(htmlContent);
         final int maxFailures = getConfiguration().maximumWaitingTime() * 60 / getConfiguration().pollingInterval();
         int failCount = 0;
         while (true)
@@ -218,6 +222,21 @@ public class XcMailrApi
         Assert.assertEquals("Mailbox could not be accessed", 200, response.code());
 
         return response;
+    }
+
+    private static void assertPatternIsValid(String pattern)
+    {
+        if (pattern != null)
+        {
+            try
+            {
+                Pattern.compile(pattern);
+            }
+            catch (PatternSyntaxException e)
+            {
+                throw new RuntimeException("entered pattern \"" + pattern + "\" is invalid");
+            }
+        }
     }
 
     private static Response callXcMailr(HttpUrl httpUrl)
