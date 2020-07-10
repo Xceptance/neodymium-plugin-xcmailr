@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - develop
+      - tests-for-fetch-emails
 
 jobs:
   build:
