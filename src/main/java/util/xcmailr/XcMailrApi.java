@@ -61,6 +61,11 @@ public class XcMailrApi
                            getConfiguration().temporaryMailValidMinutes();
         final HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
         final Response response = callXcMailr(builder.build());
+
+        Assert.assertNotNull("XcMailr not reachable", response);
+        Assert.assertEquals("Temporary Email could not be created", 200, response.code());
+        LOGGER.debug("E-mail created: \"" + email + "\"");
+
         String responseBody = "";
         try
         {
@@ -70,11 +75,11 @@ public class XcMailrApi
         {
             e.printStackTrace();
         }
+        finally
+        {
+            response.close();
+        }
 
-        Assert.assertNotNull("XcMailr not reachable", response);
-        Assert.assertEquals("Temporary Email could not be created", 200, response.code());
-        LOGGER.debug("E-mail created: \"" + email + "\"");
-        response.close();
         return responseBody;
     }
 
