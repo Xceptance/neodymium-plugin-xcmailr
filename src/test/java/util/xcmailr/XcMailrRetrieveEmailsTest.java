@@ -1,18 +1,18 @@
 package util.xcmailr;
 
 import java.io.IOException;
+import java.net.URISyntaxException;
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import com.codeborne.selenide.Selenide;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 
 import util.xcmailr.data.EmailAccount;
 import util.xcmailr.util.SendEmail;
+import xcmailr.client.Mail;
 
 public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
 {
@@ -25,10 +25,12 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
                                                                CREDENTIALS.smtpServerPort(), false, true);
 
     @Before
-    public void createTempEmailAndSendMessage() throws IOException
+    public void createTempEmailAndSendMessage() throws IOException, URISyntaxException, InterruptedException
     {
-        XcMailrApi.createTemporaryEmail(tempEmail);
-        SendEmail.send(emailAccount, tempEmail, subject, textToSend);
+        XcMailrApi.createTemporaryEmail(tempEmail, false);
+
+        // TODO change to SendEmail.send method as soon as REST-API released
+        SendEmail.sendViaLocalNet(emailAccount.getEmail(), tempEmail, subject, textToSend);
     }
 
     /**
@@ -38,8 +40,8 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void testRetrieveLastEmailBySubject()
     {
-        String response = XcMailrApi.retrieveLastEmailBySubject(tempEmail, subject);
-        validateMessage(parseMessage(response));
+        Mail mail = XcMailrApi.retrieveLastEmailBySubject(tempEmail, subject).get(0);
+        validateMessage(mail);
     }
 
     /**
@@ -49,8 +51,8 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void testRetrieveLastEmailBySender()
     {
-        String response = XcMailrApi.retrieveLastEmailBySender(tempEmail, emailAccount.getEmail());
-        validateMessage(parseMessage(response));
+        Mail mail = XcMailrApi.retrieveLastEmailBySender(tempEmail, emailAccount.getEmail()).get(0);
+        validateMessage(mail);
     }
 
     /**
@@ -60,8 +62,8 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     public void fetchLastEmail()
     {
         // fetch last received e-mail
-        String response = XcMailrApi.fetchEmails(tempEmail, null, null, null, null, null, true);
-        validateMessage(parseMessage(response));
+        Mail mail = XcMailrApi.fetchEmails(tempEmail, null, null, null, null, true).get(0);
+        validateMessage(mail);
     }
 
     /**
@@ -73,8 +75,8 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
         String textToRetrieve = textToSend.replaceAll("\\?", "\\\\?").replaceAll("\\)", "\\\\)").replaceAll("\\n", "\\\\r\\\\n");
 
         // fetch last received e-mail with specified plain text
-        String response = XcMailrApi.fetchEmails(tempEmail, null, null, textToRetrieve, null, null, true);
-        validateMessage(parseMessage(response));
+        Mail mail = XcMailrApi.fetchEmails(tempEmail, null, null, textToRetrieve, null, true).get(0);
+        validateMessage(mail);
     }
 
     /**
@@ -86,8 +88,8 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
         String textToRetrieve = textToSend.replaceAll("\\?", "\\\\?").replaceAll("\\)", "\\\\)").replaceAll("\\n", "\\\\r\\\\n");
 
         // fetch last received e-mail with specified HTML text
-        String response = XcMailrApi.fetchEmails(tempEmail, null, null, null, textToRetrieve, null, true);
-        validateMessage(parseMessage(response));
+        Mail mail = XcMailrApi.fetchEmails(tempEmail, null, null, null, textToRetrieve, true).get(0);
+        validateMessage(mail);
     }
 
     /**
@@ -97,7 +99,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     public void fetchLastEmailByTextContentWithInvalidPattern()
     {
         Assert.assertThrows("entered pattern \"" + textToSend + "\" is invalid", RuntimeException.class, () -> {
-            XcMailrApi.fetchEmails(tempEmail, null, null, textToSend, null, null, true);
+            XcMailrApi.fetchEmails(tempEmail, null, null, textToSend, null, true);
         });
     }
 
@@ -108,7 +110,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     public void fetchLastEmailByHtmlContentWithInvalidPattern()
     {
         Assert.assertThrows("entered pattern \"" + textToSend + "\" is invalid", RuntimeException.class, () -> {
-            XcMailrApi.fetchEmails(tempEmail, null, null, null, textToSend, null, true);
+            XcMailrApi.fetchEmails(tempEmail, null, null, null, textToSend, true);
         });
     }
 
@@ -118,33 +120,26 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void fetchEmailsFromTempEmail()
     {
-        SendEmail.send(emailAccount, tempEmail, subject, textToSend);
+        // TODO change to SendEmail.send method as soon as REST-API released
+        SendEmail.sendViaLocalNet(emailAccount.getEmail(), tempEmail, subject, textToSend);
         Selenide.sleep(1000);
+
         // fetch all received e-mails
-        String response = XcMailrApi.fetchEmails(tempEmail, null, null, null, null, null, false);
-        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        Assert.assertEquals(2, messagesArray.size());
+        List<Mail> mails = XcMailrApi.fetchEmails(tempEmail, null, null, null, null, false);
+        Assert.assertEquals(2, mails.size());
 
-        for (int i = 0; i < 2; i++)
+        for (Mail mail : mails)
         {
-            JsonObject message = messagesArray.get(i).getAsJsonObject();
-
-            validateMessage(message);
+            validateMessage(mail);
         }
     }
 
-    private JsonObject parseMessage(String response)
+    private void validateMessage(Mail message)
     {
-        JsonArray messagesArray = new JsonParser().parse(response).getAsJsonArray();
-        return messagesArray.get(0).getAsJsonObject();
-    }
-
-    private void validateMessage(JsonObject message)
-    {
-        Assert.assertEquals(message.get("mailAddress").getAsString().replaceAll("\"", ""), tempEmail);
-        Assert.assertEquals(message.get("sender").getAsString().replaceAll("\"", ""), emailAccount.getEmail());
-        Assert.assertEquals(message.get("subject").getAsString().replaceAll("\"", ""), subject);
-        Assert.assertEquals(decodeAndNormalize(message.get("htmlContent").getAsString()).replaceAll("\"", ""), textToSend);
-        Assert.assertEquals(decodeAndNormalize(message.get("textContent").getAsString()).replaceAll("\"", ""), textToSend);
+        Assert.assertEquals(message.recipient, tempEmail);
+        Assert.assertEquals(message.sender, emailAccount.getEmail());
+        Assert.assertEquals(message.subject, subject);
+        Assert.assertEquals(decodeAndNormalize(message.textContent), textToSend);
+        Assert.assertEquals(decodeAndNormalize(message.htmlContent), textToSend);
     }
 }

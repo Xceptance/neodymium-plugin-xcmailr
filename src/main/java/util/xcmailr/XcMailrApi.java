@@ -1,7 +1,9 @@
 package util.xcmailr;
 
-import java.io.IOException;
+import java.net.http.HttpClient;
 import java.util.Collections;
+import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
@@ -9,14 +11,19 @@ import java.util.regex.PatternSyntaxException;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import okhttp3.HttpUrl;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
+import com.google.gson.Gson;
+
+import xcmailr.client.Mail;
+import xcmailr.client.MailFilterOptions;
+import xcmailr.client.Mailbox;
+import xcmailr.client.impl.MailApiImpl;
+import xcmailr.client.impl.MailboxApiImpl;
+import xcmailr.client.impl.RestApiClient;
 
 public class XcMailrApi
 {
@@ -51,31 +58,181 @@ public class XcMailrApi
      * @param email
      *            the e-mail address <br>
      *            The domain of the e-mail must match the XcMailr's available domains.
-     * @return a String containing the server's response with information about the temporary e-mail
-     * @throws IOException
-     *             in case if there was an error while reading the response from server
+     * @param forwardEnabled
+     *            boolean value if the received e-mails should be forwarded to an account owner e-mail
+     * @return a {@link Mailbox} object containing information about the temporary e-mail
      */
-    public static String createTemporaryEmail(String email)
+    public static Mailbox createTemporaryEmail(String email, boolean forwardEnabled)
     {
-        final String url = getConfiguration().url() + "/create/temporaryMail/" + getConfiguration().apiToken() + "/" + email + "/" +
-                           getConfiguration().temporaryMailValidMinutes();
-        final HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
-        final Response response = callXcMailr(builder.build());
-        String responseBody = "";
+        Mailbox mailbox = new Mailbox(email, DateUtils.addMinutes(new Date(), 1).getTime(), forwardEnabled);
         try
         {
-            responseBody = response.body().string();
+            mailbox = createMailboxApiImpl().createMailbox(mailbox);
         }
-        catch (IOException e)
+        catch (Exception e)
         {
-            e.printStackTrace();
+            throwException(e);
         }
+        return mailbox;
+    }
 
-        Assert.assertNotNull("XcMailr not reachable", response);
-        Assert.assertEquals("Temporary Email could not be created", 200, response.code());
-        LOGGER.debug("E-mail created: \"" + email + "\"");
-        response.close();
-        return responseBody;
+    /**
+     * Retrieves information about all users mailboxes
+     * 
+     * @return the retrieved {@link List} of {@link Mailbox} objects
+     */
+    public static List<Mailbox> listMailboxes()
+    {
+        List<Mailbox> mailboxes = null;
+        try
+        {
+            mailboxes = createMailboxApiImpl().listMailboxes();
+        }
+        catch (Exception e)
+        {
+            throwException(e);
+        }
+        return mailboxes;
+    }
+
+    /**
+     * Retrieves information about mailbox
+     * 
+     * @param email
+     *            e-mail address of the target mailbox
+     * @return @link Mailbox} object with the desired information
+     */
+    public static Mailbox getMailbox(String email)
+    {
+        Mailbox mailbox = null;
+
+        try
+        {
+            mailbox = createMailboxApiImpl().getMailbox(email);
+        }
+        catch (Exception e)
+        {
+            return null;
+        }
+        return mailbox;
+    }
+
+    /**
+     * Update information for the mailbox
+     * 
+     * @param address
+     *            current address of the mailbox
+     * @param newAddress
+     *            new mailbox address
+     * @param minutesActive
+     *            period during which the temporary e-mail should be active
+     * @param forwardEnabled
+     *            boolean value if the received e-mails should be forwarded to an account owner e-mail
+     * @return @link Mailbox} object with information about updated mailbox
+     */
+    public static Mailbox updateMailbox(final String address, final String newAddress, final Integer minutesActive,
+                                        final Boolean forwardEnabled)
+    {
+        Mailbox oldMailbox = getMailbox(address);
+        int validMinutes = (int) Math.round((new Date(oldMailbox.deactivationTime).getTime() - new Date().getTime() * 1.0) / 60000);
+        Mailbox mailbox = null;
+
+        try
+        {
+            mailbox = createMailboxApiImpl().updateMailbox(address, newAddress == null ? oldMailbox.address : newAddress,
+                                                           minutesActive == null ? validMinutes : minutesActive,
+                                                           forwardEnabled == null ? oldMailbox.forwardEnabled : forwardEnabled);
+        }
+        catch (Exception e)
+        {
+            throwException(e);
+        }
+        return mailbox;
+    }
+
+    /**
+     * Update the mailbox address
+     * 
+     * @param address
+     *            current address of the mailbox
+     * @param newAddress
+     *            new mailbox address
+     * @return @link Mailbox} object with information about updated mailbox
+     */
+    public static Mailbox updateMailboxAddress(final String address, final String newAddress)
+    {
+        return updateMailbox(address, newAddress, null, null);
+    }
+
+    /**
+     * Update information for the mailbox
+     * 
+     * @param address
+     *            current address of the mailbox
+     * @param newAddress
+     *            new mailbox address
+     * @return @link Mailbox} object with information about updated mailbox
+     */
+    public static Mailbox updateMailboxValidMinutes(final String address, final int newValidMinutesNumber)
+    {
+        return updateMailbox(address, null, newValidMinutesNumber, null);
+    }
+
+    /**
+     * Update forward settings for the mailbox
+     * 
+     * @param address
+     *            current address of the mailbox
+     * @param newAddress
+     *            new mailbox address
+     * @return @link Mailbox} object with information about updated mailbox
+     */
+    public static Mailbox updateMailboxForwarding(final String address, final boolean forwardEnabled)
+    {
+        return updateMailbox(address, null, null, forwardEnabled);
+    }
+
+    /**
+     * Delete the mailbox
+     * 
+     * @param address
+     *            e-mail of the mailbox, that should be deleted
+     */
+    public static void deleteMailbox(String address)
+    {
+        try
+        {
+            if (getMailbox(address) != null)
+            {
+                createMailboxApiImpl().deleteMailbox(address);
+            }
+        }
+        catch (Exception e)
+        {
+            throwException(e);
+        }
+    }
+
+    // ----------------------------- Mail Api-------------------------------------------
+    /**
+     * Retrieve all mail from mailbox
+     * 
+     * @param mailboxAddress
+     *            mailbox address
+     * @return the retrieved {@link List} of {@link Mail} objects
+     */
+    public static List<Mail> retrieveAllMailsFromMailbox(String mailboxAddress)
+    {
+        List<Mail> allMail = null;
+        try
+        {
+            allMail = createMailApiImpl().listMails(mailboxAddress, null);
+        }
+        catch (Exception e)
+        {
+            throwException(e);
+        }
+        return allMail;
     }
 
     /**
@@ -87,9 +244,9 @@ public class XcMailrApi
      *            the received e-mail's subject. May also be a regular expression.
      * @return a String containing a JSON array with the received message
      */
-    public static String retrieveLastEmailBySubject(String email, String subject)
+    public static List<Mail> retrieveLastEmailBySubject(String email, String subject)
     {
-        return fetchEmails(email, null, subject, null, null, null, true);
+        return fetchEmails(email, null, subject, null, null, true);
     }
 
     /**
@@ -101,9 +258,9 @@ public class XcMailrApi
      *            the received e-mail's sender. May also be a regular expression.
      * @return a String containing a JSON array of the received message
      */
-    public static String retrieveLastEmailBySender(String email, String sender)
+    public static List<Mail> retrieveLastEmailBySender(String email, String sender)
     {
-        return fetchEmails(email, sender, null, null, null, null, true);
+        return fetchEmails(email, sender, null, null, null, true);
     }
 
     /**
@@ -125,9 +282,11 @@ public class XcMailrApi
      *            a boolean indicating whether only the last e-mail or more should be returned.
      * @return a String containing JSON Objects of each e-mail
      */
-    public static String fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String format,
-                                     boolean lastMatch)
+    public static List<Mail> fetchEmails(String email, String from, String subject, String textContent, String htmlContent,
+                                         boolean lastMatch)
     {
+        assertPatternIsValid(from);
+        assertPatternIsValid(subject);
         assertPatternIsValid(textContent);
         assertPatternIsValid(htmlContent);
         final int maxFailures = getConfiguration().maximumWaitingTime() * 60 / getConfiguration().pollingInterval();
@@ -140,33 +299,11 @@ public class XcMailrApi
                 LOGGER.warn("No e-mail retrieved while polling.");
                 return null;
             }
-
-            Response response = null;
-            try
+            List<Mail> mails = fetchEmailsFromRemote(email, from, subject, textContent, htmlContent, lastMatch);
+            if (mails != null)
             {
-                response = fetchEmailsFromRemote(email, from, subject, textContent, htmlContent, format, lastMatch);
-                if (response.isSuccessful())
-                {
-                    String lastResult = response.body().string();
-                    if (StringUtils.isNotBlank(lastResult) && !lastResult.equals("[]"))
-                    {
-                        // success
-                        return lastResult;
-                    }
-                }
+                return mails;
             }
-            catch (final Exception e)
-            {
-                LOGGER.error("Error while analizing the request.");
-            }
-            finally
-            {
-                if (response != null)
-                {
-                    response.close();
-                }
-            }
-
             failCount++;
 
             try
@@ -181,47 +318,39 @@ public class XcMailrApi
         }
     }
 
-    private static Response fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent,
-                                                  String format, boolean lastMatch)
+    private static List<Mail> fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent,
+                                                    boolean lastMatch)
     {
-        final String url = getConfiguration().url() + "/mailbox/" + "/" + email + "/" + getConfiguration().apiToken();
-        final HttpUrl.Builder builder = HttpUrl.parse(url).newBuilder();
+        MailFilterOptions options = new MailFilterOptions();
 
         if (StringUtils.isNotBlank(from))
         {
-            builder.addQueryParameter("from", from);
+            options.senderPattern(from);
         }
         if (StringUtils.isNotBlank(subject))
         {
-            builder.addQueryParameter("subject", subject);
+            options.subjectPattern(subject);
         }
         if (StringUtils.isNotBlank(textContent))
         {
-            builder.addQueryParameter("textContent", textContent);
+            options.textContentPattern(textContent);
         }
         if (StringUtils.isNotBlank(htmlContent))
         {
-            builder.addQueryParameter("htmlContent", htmlContent);
+            options.htmlContentPattern(htmlContent);
         }
-        if (StringUtils.isNotBlank(format))
+        options.lastMatchOnly(lastMatch);
+        List<Mail> mails = null;
+        try
         {
-            builder.addQueryParameter("format", format);
+            mails = createMailApiImpl().listMails(email, options);
         }
-        else
+        catch (Exception e)
         {
-            builder.addQueryParameter("format", "json");
+            throwException(e);
         }
-        if (lastMatch)
-        {
-            builder.addQueryParameter("lastMatch", "");
-        }
-        final Response response = callXcMailr(builder.build());
 
-        Assert.assertNotNull("XcMailr not reachable", response);
-
-        Assert.assertEquals("Mailbox could not be accessed", 200, response.code());
-
-        return response;
+        return mails;
     }
 
     private static void assertPatternIsValid(String pattern)
@@ -239,19 +368,24 @@ public class XcMailrApi
         }
     }
 
-    private static Response callXcMailr(HttpUrl httpUrl)
+    private static void throwException(Exception e)
     {
-        final OkHttpClient client = new OkHttpClient();
-        final Request request = new Request.Builder().url(httpUrl).build();
-        try
-        {
-            return client.newCall(request).execute();
-        }
-        catch (final IOException e)
-        {
-            LOGGER.error("Request error while callincg XcMailr.");
-            e.printStackTrace();
-        }
-        return null;
+        Assert.assertNull("Error while parsing server response", e);
+    }
+
+    private static MailboxApiImpl createMailboxApiImpl()
+    {
+        final HttpClient httpClient = HttpClient.newHttpClient();
+        RestApiClient restApiClient = new RestApiClient(getConfiguration().url(), getConfiguration().apiToken(), httpClient);
+
+        return new MailboxApiImpl(restApiClient, new Gson());
+    }
+
+    private static MailApiImpl createMailApiImpl()
+    {
+        final HttpClient httpClient = HttpClient.newHttpClient();
+        RestApiClient restApiClient = new RestApiClient(getConfiguration().url(), getConfiguration().apiToken(), httpClient);
+
+        return new MailApiImpl(restApiClient, new Gson());
     }
 }

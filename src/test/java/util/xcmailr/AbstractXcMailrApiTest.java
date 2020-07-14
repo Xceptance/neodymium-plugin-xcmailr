@@ -3,6 +3,8 @@ package util.xcmailr;
 import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.http.client.ClientProtocolException;
@@ -11,7 +13,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 
 import util.xcmailr.util.Credentials;
-import util.xcmailr.util.SendRequest;
 
 public abstract class AbstractXcMailrApiTest extends AbstractTest
 {
@@ -30,26 +31,35 @@ public abstract class AbstractXcMailrApiTest extends AbstractTest
             properties.put("xcmailr.apiToken", apiToken);
         }
         properties.put("xcmailr.temporaryMailValidMinutes", validMinutes);
-        savePropertiesAndApply();
 
-        SendRequest.login(CREDENTIALS.xcmailrEmail(), CREDENTIALS.xcmailrPassword());
+        // TODO: change url as soon as REST-API released
+        properties.put("xcmailr.url", "http://localhost:8080");
+        savePropertiesAndApply();
     }
 
     @Before
     public void createTempEmail()
     {
-        tempEmail = randomEmail("test", "varmail.net");
+        // TODO: change domain as soon as REST-API released
+        tempEmail = randomEmail("test", "xcmailr.test");
     }
 
     @After
     public void deleteTempEmail() throws ClientProtocolException, IOException
     {
-        SendRequest.deleteTempEmail(tempEmail);
+        XcMailrApi.deleteMailbox(tempEmail);
     }
 
     protected static String decodeAndNormalize(String text)
     {
-        return new String(Base64.getDecoder().decode(text)).replaceAll(String.valueOf((char) 13), "");
+        Pattern isBase64 = Pattern.compile("^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)?$");
+        Matcher matcher = isBase64.matcher(text);
+        String decodedText = text;
+        if (matcher.find())
+        {
+            decodedText = new String(Base64.getDecoder().decode(text));
+        }
+        return decodedText.replaceAll(String.valueOf((char) 13), "");
     }
 
     protected static String randomEmail(String prefix, String domain)
