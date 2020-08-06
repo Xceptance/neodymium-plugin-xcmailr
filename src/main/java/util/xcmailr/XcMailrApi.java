@@ -300,7 +300,7 @@ public class XcMailrApi
                 return null;
             }
             List<Mail> mails = fetchEmailsFromRemote(email, from, subject, textContent, htmlContent, lastMatch);
-            if (mails != null)
+            if (mails != null && !mails.isEmpty())
             {
                 return mails;
             }

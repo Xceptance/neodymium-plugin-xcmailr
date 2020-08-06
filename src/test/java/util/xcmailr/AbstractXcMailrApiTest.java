@@ -32,16 +32,13 @@ public abstract class AbstractXcMailrApiTest extends AbstractTest
         }
         properties.put("xcmailr.temporaryMailValidMinutes", validMinutes);
 
-        // TODO: change url as soon as REST-API released
-        properties.put("xcmailr.url", "http://localhost:8080");
         savePropertiesAndApply();
     }
 
     @Before
     public void createTempEmail()
     {
-        // TODO: change domain as soon as REST-API released
-        tempEmail = randomEmail("test", "xcmailr.test");
+        tempEmail = randomEmail("test", "varmail.de");
     }
 
     @After

@@ -49,7 +49,7 @@ public class EmailCreationApiTest extends AbstractXcMailrApiTest
     public void testUpdateMailbox()
     {
         XcMailrApi.createTemporaryEmail(tempEmail, false);
-        final String newAddress = randomEmail("test", "xcmailr.test");
+        final String newAddress = randomEmail("test", "varmail.de");
         final int validMinutes = 2;
         Date deactivationTime = DateUtils.addMinutes(new Date(), validMinutes);
         final boolean forward = true;
@@ -65,7 +65,7 @@ public class EmailCreationApiTest extends AbstractXcMailrApiTest
     public void testUpdateMailboxAddress()
     {
         Mailbox oldMailbox = XcMailrApi.createTemporaryEmail(tempEmail, false);
-        final String newAddress = randomEmail("test", "xcmailr.test");
+        final String newAddress = randomEmail("test", "varmail.de");
 
         XcMailrApi.updateMailboxAddress(tempEmail, newAddress);
         tempEmail = newAddress;

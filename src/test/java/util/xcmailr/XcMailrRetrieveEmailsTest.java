@@ -29,8 +29,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     {
         XcMailrApi.createTemporaryEmail(tempEmail, false);
 
-        // TODO change to SendEmail.send method as soon as REST-API released
-        SendEmail.sendViaLocalNet(emailAccount.getEmail(), tempEmail, subject, textToSend);
+        SendEmail.send(emailAccount, tempEmail, subject, textToSend);
     }
 
     /**
@@ -120,8 +119,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void fetchEmailsFromTempEmail()
     {
-        // TODO change to SendEmail.send method as soon as REST-API released
-        SendEmail.sendViaLocalNet(emailAccount.getEmail(), tempEmail, subject, textToSend);
+        SendEmail.send(emailAccount, tempEmail, subject, textToSend);
         Selenide.sleep(1000);
 
         // fetch all received e-mails

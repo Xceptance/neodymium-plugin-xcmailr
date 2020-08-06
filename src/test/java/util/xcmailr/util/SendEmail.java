@@ -71,7 +71,7 @@ public class SendEmail
 
             message.setRecipients(Message.RecipientType.TO, addresses);
             message.setSubject(subject);
-            message.setFrom(new InternetAddress(emailAccount.getLogin()));
+            message.setFrom(new InternetAddress(emailAccount.getEmail()));
             message.setContent(multipart);
 
             // Send message
