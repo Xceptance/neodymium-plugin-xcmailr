@@ -37,24 +37,30 @@ public class SendEmail
         smtpProps.setProperty("mail.smtp.ssl.enable", Boolean.toString(emailAccount.isSsl()));
         smtpProps.setProperty("mail.smtp.tls.enable", Boolean.toString(emailAccount.isTls()));
         smtpProps.put("mail.smtp.host", emailAccount.getServer());
-        smtpProps.put("mail.smtp.auth", "true");
-        smtpProps.put("mail.stmp.port", emailAccount.getPort());
+        smtpProps.put("mail.smtp.auth", Boolean.toString(emailAccount.getPassword() != null));
+        smtpProps.put("mail.smtp.port", emailAccount.getPort());
         smtpProps.setProperty("mail.user", emailAccount.getLogin());
 
         // create session
-        final SmtpAuthenticator smtpAuthenticator = new SmtpAuthenticator(emailAccount.getLogin(), emailAccount.getPassword());
-        final Session session = Session.getInstance(smtpProps, smtpAuthenticator);
+        final Session session;
+        if (emailAccount.getPassword() != null)
+        {
+            final SmtpAuthenticator smtpAuthenticator = new SmtpAuthenticator(emailAccount.getLogin(), emailAccount.getPassword());
+            session = Session.getInstance(smtpProps, smtpAuthenticator);
+        }
+        else
+        {
+            session = Session.getDefaultInstance(smtpProps);
+        }
 
-        // Create the message part
         final MimeMessage message = new MimeMessage(session);
 
         try
         {
-
             final Address[] addresses =
-                {
-                    new InternetAddress(recipient)
-                };
+            {
+              new InternetAddress(recipient)
+            };
             final BodyPart messageBodyPartText = new MimeBodyPart();
             messageBodyPartText.setText(text);
             final BodyPart messageBodyPartHtml = new MimeBodyPart();
@@ -76,5 +82,24 @@ public class SendEmail
         {
             throw new RuntimeException("Failed to send e-mail via SMTP server", e);
         }
+    }
+
+    /**
+     * Sends an e-mail from the specified <code>sender</code> to the specified <code>recipient</code>. using localhost
+     * server
+     * 
+     * @param sender
+     *            an address of sender (can be any e-mail)
+     * @param recipient
+     *            e-mail address of recipient
+     * @param subject
+     *            subject of the e-mail
+     * @param text
+     *            text to send
+     */
+    public static void sendViaLocalNet(String sender, String recipient, String subject, String text)
+    {
+        EmailAccount localhostEmail = new EmailAccount(sender, null, "localhost", 25000, false, false);
+        send(localhostEmail, recipient, subject, text);
     }
 }

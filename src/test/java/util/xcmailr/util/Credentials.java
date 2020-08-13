@@ -7,9 +7,9 @@ import org.aeonbits.owner.Mutable;
 
 @LoadPolicy(LoadType.MERGE)
 @Sources(
-    {
-        "file:config/dev-credentials.properties", "file:config/credentials.properties"
-    })
+{
+  "file:config/dev-credentials.properties", "file:config/credentials.properties"
+})
 
 public interface Credentials extends Mutable
 {
