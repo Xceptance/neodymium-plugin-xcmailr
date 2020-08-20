@@ -12,7 +12,6 @@ import java.util.regex.PatternSyntaxException;
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
-import org.junit.Assert;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +20,7 @@ import com.google.gson.Gson;
 import xcmailr.client.Mail;
 import xcmailr.client.MailFilterOptions;
 import xcmailr.client.Mailbox;
+import xcmailr.client.XCMailrApiException;
 import xcmailr.client.impl.MailApiImpl;
 import xcmailr.client.impl.MailboxApiImpl;
 import xcmailr.client.impl.RestApiClient;
@@ -64,14 +64,14 @@ public class XcMailrApi
      */
     public static Mailbox createTemporaryEmail(String email, boolean forwardEnabled)
     {
-        Mailbox mailbox = new Mailbox(email, DateUtils.addMinutes(new Date(), 1).getTime(), forwardEnabled);
+        Mailbox mailbox = new Mailbox(email, DateUtils.addMinutes(new Date(), getConfiguration().temporaryMailValidMinutes()).getTime(), forwardEnabled);
         try
         {
             mailbox = createMailboxApiImpl().createMailbox(mailbox);
         }
         catch (Exception e)
         {
-            throwException(e);
+            throw new RuntimeException("Error while creating the mailbox.", e);
         }
         return mailbox;
     }
@@ -90,7 +90,7 @@ public class XcMailrApi
         }
         catch (Exception e)
         {
-            throwException(e);
+            throw new RuntimeException("Error while retrieving and parsing the mails.", e);
         }
         return mailboxes;
     }
@@ -112,7 +112,14 @@ public class XcMailrApi
         }
         catch (Exception e)
         {
-            return null;
+            if (e instanceof XCMailrApiException && ((XCMailrApiException) e).statusCode == 404)
+            {
+                return mailbox;
+            }
+            else
+            {
+                throw new RuntimeException("Error while retrieving the mailbox.", e);
+            }
         }
         return mailbox;
     }
@@ -145,7 +152,7 @@ public class XcMailrApi
         }
         catch (Exception e)
         {
-            throwException(e);
+            throw new RuntimeException("Error while updating the mailbox.", e);
         }
         return mailbox;
     }
@@ -209,7 +216,7 @@ public class XcMailrApi
         }
         catch (Exception e)
         {
-            throwException(e);
+            throw new RuntimeException("Error while deleting the mailbox", e);
         }
     }
 
@@ -223,16 +230,7 @@ public class XcMailrApi
      */
     public static List<Mail> retrieveAllMailsFromMailbox(String mailboxAddress)
     {
-        List<Mail> allMail = null;
-        try
-        {
-            allMail = createMailApiImpl().listMails(mailboxAddress, null);
-        }
-        catch (Exception e)
-        {
-            throwException(e);
-        }
-        return allMail;
+        return fetchEmails(mailboxAddress, null, null, null, null, null, false);
     }
 
     /**
@@ -244,9 +242,9 @@ public class XcMailrApi
      *            the received e-mail's subject. May also be a regular expression.
      * @return a String containing a JSON array with the received message
      */
-    public static List<Mail> retrieveLastEmailBySubject(String email, String subject)
+    public static Mail retrieveLastEmailBySubject(String email, String subject)
     {
-        return fetchEmails(email, null, subject, null, null, true);
+        return fetchEmails(email, null, subject, null, null, null, true).get(0);
     }
 
     /**
@@ -258,9 +256,9 @@ public class XcMailrApi
      *            the received e-mail's sender. May also be a regular expression.
      * @return a String containing a JSON array of the received message
      */
-    public static List<Mail> retrieveLastEmailBySender(String email, String sender)
+    public static Mail retrieveLastEmailBySender(String email, String sender)
     {
-        return fetchEmails(email, sender, null, null, null, true);
+        return fetchEmails(email, sender, null, null, null, null, true).get(0);
     }
 
     /**
@@ -276,19 +274,20 @@ public class XcMailrApi
      *            the text content of the e-mail. May also be a regular expression.
      * @param htmlContent
      *            the HTML content of the e-mail. May also be a regular expression.
-     * @param format
-     *            a String indicating the desired response format. Valid values are "html", "json" and "header".
+     * @param headers
+     *            the received e-mail's header. May also be a regular expression.
      * @param lastMatch
      *            a boolean indicating whether only the last e-mail or more should be returned.
      * @return a String containing JSON Objects of each e-mail
      */
-    public static List<Mail> fetchEmails(String email, String from, String subject, String textContent, String htmlContent,
+    public static List<Mail> fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String headers,
                                          boolean lastMatch)
     {
         assertPatternIsValid(from);
         assertPatternIsValid(subject);
         assertPatternIsValid(textContent);
         assertPatternIsValid(htmlContent);
+        assertPatternIsValid(headers);
         final int maxFailures = getConfiguration().maximumWaitingTime() * 60 / getConfiguration().pollingInterval();
         int failCount = 0;
         while (true)
@@ -299,7 +298,7 @@ public class XcMailrApi
                 LOGGER.warn("No e-mail retrieved while polling.");
                 return null;
             }
-            List<Mail> mails = fetchEmailsFromRemote(email, from, subject, textContent, htmlContent, lastMatch);
+            List<Mail> mails = fetchEmailsFromRemote(email, from, subject, textContent, htmlContent, headers, lastMatch);
             if (mails != null && !mails.isEmpty())
             {
                 return mails;
@@ -318,36 +317,40 @@ public class XcMailrApi
         }
     }
 
-    private static List<Mail> fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent,
+    private static List<Mail> fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent, String headers,
                                                     boolean lastMatch)
     {
-        MailFilterOptions options = new MailFilterOptions();
+        MailFilterOptions filters = new MailFilterOptions();
 
         if (StringUtils.isNotBlank(from))
         {
-            options.senderPattern(from);
+            filters.senderPattern(from);
         }
         if (StringUtils.isNotBlank(subject))
         {
-            options.subjectPattern(subject);
+            filters.subjectPattern(subject);
         }
         if (StringUtils.isNotBlank(textContent))
         {
-            options.textContentPattern(textContent);
+            filters.textContentPattern(textContent);
         }
         if (StringUtils.isNotBlank(htmlContent))
         {
-            options.htmlContentPattern(htmlContent);
+            filters.htmlContentPattern(htmlContent);
         }
-        options.lastMatchOnly(lastMatch);
+        if (StringUtils.isNotBlank(htmlContent))
+        {
+            filters.headersPattern(headers);
+        }
+        filters.lastMatchOnly(lastMatch);
         List<Mail> mails = null;
         try
         {
-            mails = createMailApiImpl().listMails(email, options);
+            mails = createMailApiImpl().listMails(email, filters);
         }
         catch (Exception e)
         {
-            throwException(e);
+            throw new RuntimeException("Error while retrieving and parsing the mails.", e);
         }
 
         return mails;
@@ -363,14 +366,9 @@ public class XcMailrApi
             }
             catch (PatternSyntaxException e)
             {
-                throw new RuntimeException("entered pattern \"" + pattern + "\" is invalid");
+                throw new RuntimeException("The given pattern \"" + pattern + "\" is invalid");
             }
         }
-    }
-
-    private static void throwException(Exception e)
-    {
-        Assert.assertNull("Error while parsing server response", e);
     }
 
     private static MailboxApiImpl createMailboxApiImpl()

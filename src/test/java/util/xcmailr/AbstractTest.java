@@ -6,24 +6,23 @@ import java.nio.file.Files;
 import java.text.MessageFormat;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.After;
 
-import com.google.common.base.Joiner;
-
 public abstract class AbstractTest
 {
-    protected static Map<String, String> properties = new HashMap<>();
+    protected static final Map<String, String> properties = new HashMap<>();
 
-    protected static final String fileLocation = "config/temp-xcmailr.properties";
+    protected static final String TEMPORARY_CONFIGURATION_FILE_LOCATION = "config/temp-xcmailr.properties";
 
-    protected static File tempConfigFile2 = new File("./" + fileLocation);
+    protected static final File temporaryConfigurationFile = new File("./" + TEMPORARY_CONFIGURATION_FILE_LOCATION);
 
     @After
     public void deleteTempFile()
     {
-        deleteTempFile(tempConfigFile2);
+        deleteTempFile(temporaryConfigurationFile);
         properties.clear();
     }
 
@@ -49,18 +48,20 @@ public abstract class AbstractTest
 
     protected static void savePropertiesAndApply()
     {
-        writeMapToPropertiesFile(properties, tempConfigFile2);
-        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
+        writeMapToPropertiesFile(properties, temporaryConfigurationFile);
+        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + TEMPORARY_CONFIGURATION_FILE_LOCATION);
     }
 
     public static void writeMapToPropertiesFile(Map<String, String> map, File file)
     {
         try
         {
-            final String join = Joiner.on("\r\n").withKeyValueSeparator("=").join(map);
+            String propertiesString = map.keySet().stream()
+                                         .map(key -> key + "=" + map.get(key))
+                                         .collect(Collectors.joining("\r\n"));
 
             final FileOutputStream outputStream = new FileOutputStream(file);
-            outputStream.write(join.getBytes());
+            outputStream.write(propertiesString.getBytes());
             outputStream.close();
         }
         catch (final Exception e)

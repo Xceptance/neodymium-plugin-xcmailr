@@ -8,8 +8,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.codeborne.selenide.Selenide;
-
 import util.xcmailr.data.EmailAccount;
 import util.xcmailr.util.SendEmail;
 import xcmailr.client.Mail;
@@ -37,7 +35,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void testRetrieveLastEmailBySubject()
     {
-        Mail mail = XcMailrApi.retrieveLastEmailBySubject(emailUnderTest, subject).get(0);
+        Mail mail = XcMailrApi.retrieveLastEmailBySubject(emailUnderTest, subject);
         validateMessage(mail);
     }
 
@@ -48,7 +46,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void testRetrieveLastEmailBySender()
     {
-        Mail mail = XcMailrApi.retrieveLastEmailBySender(emailUnderTest, emailAccount.getEmail()).get(0);
+        Mail mail = XcMailrApi.retrieveLastEmailBySender(emailUnderTest, emailAccount.getEmail());
         validateMessage(mail);
     }
 
@@ -59,7 +57,29 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     public void fetchLastEmail()
     {
         // fetch last received e-mail
-        Mail mail = XcMailrApi.fetchEmails(emailUnderTest, null, null, null, null, true).get(0);
+        Mail mail = XcMailrApi.fetchEmails(emailUnderTest, null, null, null, null, null, true).get(0);
+        validateMessage(mail);
+    }
+
+    /**
+     * test that it's possible to fetch last received e-mail with a specific plain text
+     */
+    @Test
+    public void fetchLastEmailBySender()
+    {
+        // fetch last received e-mail with specified plain text
+        Mail mail = XcMailrApi.fetchEmails(emailUnderTest, emailAccount.getEmail(), null, null, null, null, true).get(0);
+        validateMessage(mail);
+    }
+
+    /**
+     * test that it's possible to fetch last received e-mail with a specific plain text
+     */
+    @Test
+    public void fetchLastEmailBySubject()
+    {
+        // fetch last received e-mail with specified plain text
+        Mail mail = XcMailrApi.fetchEmails(emailUnderTest, null, subject, null, null, null, true).get(0);
         validateMessage(mail);
     }
 
@@ -72,7 +92,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
         String textToRetrieve = textToSend.replaceAll("\\?", "\\\\?").replaceAll("\\)", "\\\\)").replaceAll("\\n", "\\\\r\\\\n");
 
         // fetch last received e-mail with specified plain text
-        Mail mail = XcMailrApi.fetchEmails(emailUnderTest, null, null, textToRetrieve, null, true).get(0);
+        Mail mail = XcMailrApi.fetchEmails(emailUnderTest, null, null, textToRetrieve, null, null, true).get(0);
         validateMessage(mail);
     }
 
@@ -85,7 +105,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
         String textToRetrieve = textToSend.replaceAll("\\?", "\\\\?").replaceAll("\\)", "\\\\)").replaceAll("\\n", "\\\\r\\\\n");
 
         // fetch last received e-mail with specified HTML text
-        Mail mail = XcMailrApi.fetchEmails(emailUnderTest, null, null, null, textToRetrieve, true).get(0);
+        Mail mail = XcMailrApi.fetchEmails(emailUnderTest, null, null, null, textToRetrieve, null, true).get(0);
         validateMessage(mail);
     }
 
@@ -96,7 +116,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     public void fetchLastEmailByTextContentWithInvalidPattern()
     {
         Assert.assertThrows("entered pattern \"" + textToSend + "\" is invalid", RuntimeException.class, () -> {
-            XcMailrApi.fetchEmails(emailUnderTest, null, null, textToSend, null, true);
+            XcMailrApi.fetchEmails(emailUnderTest, null, null, textToSend, null, null, true);
         });
     }
 
@@ -107,7 +127,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     public void fetchLastEmailByHtmlContentWithInvalidPattern()
     {
         Assert.assertThrows("entered pattern \"" + textToSend + "\" is invalid", RuntimeException.class, () -> {
-            XcMailrApi.fetchEmails(emailUnderTest, null, null, null, textToSend, true);
+            XcMailrApi.fetchEmails(emailUnderTest, null, null, null, textToSend, null, true);
         });
     }
 
@@ -118,10 +138,17 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     public void fetchEmailsFromTempEmail()
     {
         SendEmail.send(emailAccount, emailUnderTest, subject, textToSend);
-        Selenide.sleep(1000);
+        try
+        {
+            Thread.sleep(1000);
+        }
+        catch (InterruptedException e)
+        {
+            e.printStackTrace();
+        }
 
         // fetch all received e-mails
-        List<Mail> mails = XcMailrApi.fetchEmails(emailUnderTest, null, null, null, null, false);
+        List<Mail> mails = XcMailrApi.fetchEmails(emailUnderTest, null, null, null, null, null, false);
         Assert.assertEquals(2, mails.size());
 
         for (Mail mail : mails)

@@ -1,13 +1,11 @@
 package util.xcmailr;
 
-import java.io.IOException;
 import java.util.Base64;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.aeonbits.owner.ConfigFactory;
-import org.apache.http.client.ClientProtocolException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -18,7 +16,7 @@ public abstract class AbstractXcMailrApiTest extends AbstractTest
 {
     protected static final Credentials CREDENTIALS = ConfigFactory.create(Credentials.class, System.getenv());
 
-    protected static final String VALID_MINUTES = "1";
+    protected static final String VALID_MINUTES = "3";
 
     protected static final String EMAIL_PREFIX = "xcmailr-plugin-test-";
 
@@ -27,7 +25,7 @@ public abstract class AbstractXcMailrApiTest extends AbstractTest
     protected String emailUnderTest;
 
     @BeforeClass
-    public static void configureApiToken() throws ClientProtocolException, IOException
+    public static void configureApiToken()
     {
         final String apiToken = System.getenv("XCMAILR_TOKEN");
         if (apiToken != null)
@@ -46,7 +44,7 @@ public abstract class AbstractXcMailrApiTest extends AbstractTest
     }
 
     @After
-    public void deleteTempEmail() throws ClientProtocolException, IOException
+    public void deleteTempEmail()
     {
         XcMailrApi.deleteMailbox(emailUnderTest);
     }
