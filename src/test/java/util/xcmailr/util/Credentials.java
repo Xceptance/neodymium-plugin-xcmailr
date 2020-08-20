@@ -13,12 +13,6 @@ import org.aeonbits.owner.Mutable;
 
 public interface Credentials extends Mutable
 {
-    @Key("XCMAILR_EMAIL")
-    public String xcmailrEmail();
-
-    @Key("XCMAILR_PASSWORD")
-    public String xcmailrPassword();
-
     @Key("SMTP_SERVER_EMAIL")
     public String smtpServerEmail();
 
