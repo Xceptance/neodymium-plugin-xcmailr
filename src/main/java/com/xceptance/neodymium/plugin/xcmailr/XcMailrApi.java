@@ -376,20 +376,4 @@ public class XcMailrApi
             }
         }
     }
-
-    private static MailboxApiImpl createMailboxApiImpl()
-    {
-        final HttpClient httpClient = HttpClient.newHttpClient();
-        RestApiClient restApiClient = new RestApiClient(getConfiguration().url(), getConfiguration().apiToken(), httpClient);
-
-        return new MailboxApiImpl(restApiClient, new Gson());
-    }
-
-    private static MailApiImpl createMailApiImpl()
-    {
-        HttpClient httpClient = HttpClient.newHttpClient();
-        RestApiClient restApiClient = new RestApiClient(getConfiguration().url(), getConfiguration().apiToken(), httpClient);
-
-        return new MailApiImpl(restApiClient, new Gson());
-    }
 }
