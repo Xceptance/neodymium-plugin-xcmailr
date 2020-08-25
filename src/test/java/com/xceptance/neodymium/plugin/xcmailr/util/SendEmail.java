@@ -1,4 +1,4 @@
-package util.xcmailr.util;
+package com.xceptance.neodymium.plugin.xcmailr.util;
 
 import java.util.Properties;
 
@@ -14,8 +14,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import util.xcmailr.data.EmailAccount;
-import util.xcmailr.data.SmtpAuthenticator;
+import com.xceptance.neodymium.plugin.xcmailr.data.EmailAccount;
+import com.xceptance.neodymium.plugin.xcmailr.data.SmtpAuthenticator;
 
 public class SendEmail
 {

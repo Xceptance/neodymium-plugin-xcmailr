@@ -1,4 +1,4 @@
-package util.xcmailr;
+package com.xceptance.neodymium.plugin.xcmailr;
 
 import java.io.File;
 import java.io.FileOutputStream;

@@ -1,4 +1,4 @@
-package util.xcmailr.data;
+package com.xceptance.neodymium.plugin.xcmailr.data;
 
 import javax.mail.Authenticator;
 import javax.mail.PasswordAuthentication;

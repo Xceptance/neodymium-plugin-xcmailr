@@ -1,4 +1,4 @@
-package util.xcmailr;
+package com.xceptance.neodymium.plugin.xcmailr;
 
 import java.util.Date;
 import java.util.List;
@@ -7,6 +7,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.xceptance.neodymium.plugin.xcmailr.XcMailrApi;
 
 import xcmailr.client.Mailbox;
 

@@ -1,4 +1,4 @@
-package util.xcmailr;
+package com.xceptance.neodymium.plugin.xcmailr;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
@@ -8,8 +8,10 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import util.xcmailr.data.EmailAccount;
-import util.xcmailr.util.SendEmail;
+import com.xceptance.neodymium.plugin.xcmailr.XcMailrApi;
+import com.xceptance.neodymium.plugin.xcmailr.data.EmailAccount;
+import com.xceptance.neodymium.plugin.xcmailr.util.SendEmail;
+
 import xcmailr.client.Mail;
 
 public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest

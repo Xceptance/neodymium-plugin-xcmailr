@@ -1,4 +1,4 @@
-package util.xcmailr;
+package com.xceptance.neodymium.plugin.xcmailr;
 
 import java.net.http.HttpClient;
 import java.util.Collections;

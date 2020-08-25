@@ -1,4 +1,4 @@
-package util.xcmailr.data;
+package com.xceptance.neodymium.plugin.xcmailr.data;
 
 public class EmailAccount
 {

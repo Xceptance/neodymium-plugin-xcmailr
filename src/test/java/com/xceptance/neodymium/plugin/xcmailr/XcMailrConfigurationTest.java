@@ -1,10 +1,12 @@
-package util.xcmailr;
+package com.xceptance.neodymium.plugin.xcmailr;
 
 import java.util.UUID;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Test;
+
+import com.xceptance.neodymium.plugin.xcmailr.XcMailrConfiguration;
 
 public class XcMailrConfigurationTest extends AbstractTest
 {

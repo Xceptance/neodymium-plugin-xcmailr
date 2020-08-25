@@ -1,4 +1,4 @@
-package util.xcmailr;
+package com.xceptance.neodymium.plugin.xcmailr;
 
 import java.util.Base64;
 import java.util.UUID;
@@ -10,7 +10,8 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 
-import util.xcmailr.util.Credentials;
+import com.xceptance.neodymium.plugin.xcmailr.XcMailrApi;
+import com.xceptance.neodymium.plugin.xcmailr.util.Credentials;
 
 public abstract class AbstractXcMailrApiTest extends AbstractTest
 {

@@ -1,4 +1,4 @@
-package util.xcmailr.util;
+package com.xceptance.neodymium.plugin.xcmailr.util;
 
 import org.aeonbits.owner.Config.LoadPolicy;
 import org.aeonbits.owner.Config.LoadType;
