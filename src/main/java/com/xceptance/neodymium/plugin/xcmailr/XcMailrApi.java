@@ -52,7 +52,7 @@ public class XcMailrApi
     }
 
     /**
-     * Retrieves the {@link XCMailrClient} instance of the current thread.
+     * Provides a {@link XCMailrClient} instance.
      * 
      * @return the XCMailrClient instance of the current thread
      */
@@ -135,7 +135,7 @@ public class XcMailrApi
     }
 
     /**
-     * Update information for the mailbox
+     * Update the settings of the mailbox
      * 
      * @param address
      *            current address of the mailbox
@@ -147,8 +147,7 @@ public class XcMailrApi
      *            boolean value if the received e-mails should be forwarded to an account owner e-mail
      * @return {@link Mailbox} object with information about updated mailbox
      */
-    public static Mailbox updateMailbox(final String address, final String newAddress, final Integer minutesActive,
-                                        final Boolean forwardEnabled)
+    public static Mailbox updateMailbox(final String address, final String newAddress, final Integer minutesActive, final Boolean forwardEnabled)
     {
         Mailbox oldMailbox = getMailbox(address);
         int validMinutes = (int) Math.round((new Date(oldMailbox.deactivationTime).getTime() - new Date().getTime() * 1.0) / 60000);
@@ -182,7 +181,7 @@ public class XcMailrApi
     }
 
     /**
-     * Update information for the mailbox
+     * Update the deactivation time for the mailbox
      * 
      * @param address
      *            current address of the mailbox
@@ -196,7 +195,7 @@ public class XcMailrApi
     }
 
     /**
-     * Update forward settings for the mailbox
+     * Update forwarding settings for the mailbox
      * 
      * @param address
      *            current address of the mailbox
@@ -266,7 +265,7 @@ public class XcMailrApi
      *            the e-mail address which should receive the expected e-mail
      * @param subject
      *            the received e-mail's subject. May also be a regular expression.
-     * @return a String containing a JSON array with the received message
+     * @return the last {@link Mail} object
      */
     public static Mail retrieveLastEmailBySubject(String email, String subject)
     {
@@ -280,7 +279,7 @@ public class XcMailrApi
      *            the e-mail address which should receive the expected e-mail
      * @param sender
      *            the received e-mail's sender. May also be a regular expression.
-     * @return a String containing a JSON array of the received message
+     * @return the last {@link Mail} object
      */
     public static Mail retrieveLastEmailBySender(String email, String sender)
     {
@@ -304,10 +303,9 @@ public class XcMailrApi
      *            the received e-mail's header. May also be a regular expression.
      * @param lastMatch
      *            a boolean indicating whether only the last e-mail or more should be returned.
-     * @return a String containing JSON Objects of each e-mail
+     * @return the retrieved {@link List} of {@link Mail} objects
      */
-    public static List<Mail> fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String headers,
-                                         boolean lastMatch)
+    public static List<Mail> fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String headers, boolean lastMatch)
     {
         assertPatternIsValid(from);
         assertPatternIsValid(subject);
