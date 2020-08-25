@@ -344,7 +344,7 @@ public class XcMailrApi
         {
             filters.htmlContentPattern(htmlContent);
         }
-        if (StringUtils.isNotBlank(htmlContent))
+        if (StringUtils.isNotBlank(headers))
         {
             filters.headersPattern(headers);
         }
