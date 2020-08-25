@@ -1,7 +1,11 @@
 package com.xceptance.neodymium.plugin.xcmailr.util;
 
+import java.io.File;
 import java.util.Properties;
 
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.Address;
 import javax.mail.BodyPart;
 import javax.mail.Message;
@@ -31,7 +35,7 @@ public class SendEmail
      * @param text
      *            text to send
      */
-    public static void send(EmailAccount emailAccount, String recipient, String subject, String text)
+    public static void send(EmailAccount emailAccount, String recipient, String subject, String text, File fileToSend)
     {
         final Properties smtpProps = new Properties();
         smtpProps.setProperty("mail.smtp.ssl.enable", Boolean.toString(emailAccount.isSsl()));
@@ -65,9 +69,17 @@ public class SendEmail
             messageBodyPartText.setText(text);
             final BodyPart messageBodyPartHtml = new MimeBodyPart();
             messageBodyPartHtml.setContent(text, "text/html; charset=utf-8");
+
+            final BodyPart messageBodyPartAttachment = new MimeBodyPart();
+
+            final DataSource source = new FileDataSource(fileToSend);
+            messageBodyPartAttachment.setDataHandler(new DataHandler(source));
+            messageBodyPartAttachment.setFileName(fileToSend.getName());
+
             final Multipart multipart = new MimeMultipart();
             multipart.addBodyPart(messageBodyPartText);
             multipart.addBodyPart(messageBodyPartHtml);
+            multipart.addBodyPart(messageBodyPartAttachment);
 
             message.setRecipients(Message.RecipientType.TO, addresses);
             message.setSubject(subject);
@@ -97,9 +109,9 @@ public class SendEmail
      * @param text
      *            text to send
      */
-    public static void sendViaLocalNet(String sender, String recipient, String subject, String text)
+    public static void sendViaLocalNet(String sender, String recipient, String subject, String text, File file)
     {
         EmailAccount localhostEmail = new EmailAccount(sender, null, "localhost", 25000, false, false);
-        send(localhostEmail, recipient, subject, text);
+        send(localhostEmail, recipient, subject, text, file);
     }
 }

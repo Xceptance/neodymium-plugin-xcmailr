@@ -1,5 +1,6 @@
 package com.xceptance.neodymium.plugin.xcmailr;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
@@ -20,6 +21,8 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
 
     private final String textToSend = "Hi\nHow are you?)\nBye";
 
+    private final File fileToSend = new File("src/test/resources/com/xceptance/neodymium/plugin/xcmailr/message.txt");
+
     private final EmailAccount emailAccount = new EmailAccount(CREDENTIALS.smtpServerEmail(), CREDENTIALS.smtpServerLogin(), CREDENTIALS.smtpServerPassword(), CREDENTIALS.smtpServerHost(), CREDENTIALS.smtpServerPort(), false, true);
 
     @Before
@@ -27,7 +30,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     {
         XcMailrApi.createTemporaryEmail(emailUnderTest, false);
 
-        SendEmail.send(emailAccount, emailUnderTest, subject, textToSend);
+        SendEmail.send(emailAccount, emailUnderTest, subject, textToSend, fileToSend);
     }
 
     /**
@@ -139,7 +142,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     @Test
     public void fetchEmailsFromTempEmail()
     {
-        SendEmail.send(emailAccount, emailUnderTest, subject, textToSend);
+        SendEmail.send(emailAccount, emailUnderTest, subject, textToSend, fileToSend);
         try
         {
             Thread.sleep(1000);
@@ -166,5 +169,6 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
         Assert.assertEquals(message.subject, subject);
         Assert.assertEquals(decodeAndNormalize(message.textContent), textToSend);
         Assert.assertEquals(decodeAndNormalize(message.htmlContent), textToSend);
+        Assert.assertFalse(message.attachments.isEmpty());
     }
 }
