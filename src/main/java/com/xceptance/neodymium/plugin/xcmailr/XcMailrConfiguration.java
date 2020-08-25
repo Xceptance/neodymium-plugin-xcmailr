@@ -14,7 +14,6 @@ import org.aeonbits.owner.Mutable;
 public interface XcMailrConfiguration extends Mutable
 {
     @Key("xcmailr.url")
-    @DefaultValue("https://xcmailr.xceptance.de")
     public String url();
 
     @Key("xcmailr.apiToken")

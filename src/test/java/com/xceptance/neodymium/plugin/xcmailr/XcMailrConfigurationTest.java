@@ -6,8 +6,6 @@ import org.aeonbits.owner.ConfigFactory;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.neodymium.plugin.xcmailr.XcMailrConfiguration;
-
 public class XcMailrConfigurationTest extends AbstractTest
 {
     @Test
@@ -28,12 +26,6 @@ public class XcMailrConfigurationTest extends AbstractTest
         writeMapToPropertiesFile(properties, temporaryConfigurationFile);
         ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + TEMPORARY_CONFIGURATION_FILE_LOCATION);
         Assert.assertEquals(url, ConfigFactory.create(XcMailrConfiguration.class).url());
-    }
-
-    @Test
-    public void testUrlDefault()
-    {
-        Assert.assertEquals("https://xcmailr.xceptance.de", ConfigFactory.create(XcMailrConfiguration.class).url());
     }
 
     @Test
