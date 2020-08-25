@@ -8,8 +8,6 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xceptance.neodymium.plugin.xcmailr.XcMailrApi;
-
 import xcmailr.client.Mailbox;
 
 public class EmailCreationApiTest extends AbstractXcMailrApiTest

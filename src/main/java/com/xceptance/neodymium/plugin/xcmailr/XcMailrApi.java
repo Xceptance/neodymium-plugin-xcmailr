@@ -15,15 +15,11 @@ import org.apache.commons.lang3.time.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.gson.Gson;
-
 import xcmailr.client.Mail;
 import xcmailr.client.MailFilterOptions;
 import xcmailr.client.Mailbox;
 import xcmailr.client.XCMailrApiException;
-import xcmailr.client.impl.MailApiImpl;
-import xcmailr.client.impl.MailboxApiImpl;
-import xcmailr.client.impl.RestApiClient;
+import xcmailr.client.XCMailrClient;
 
 public class XcMailrApi
 {
@@ -52,6 +48,16 @@ public class XcMailrApi
     }
 
     /**
+     * Retrieves the {@link XCMailrClient} instance of the current thread.
+     * 
+     * @return the XCMailrClient instance of the current thread
+     */
+    private static XCMailrClient getXCMailrClient()
+    {
+        return new XCMailrClient(getConfiguration().url(), getConfiguration().apiToken(), HttpClient.newHttpClient());
+    }
+
+    /**
      * Creates a temporary e-mail. <br>
      * The validity period is determined from the configuration.
      * 
@@ -67,7 +73,7 @@ public class XcMailrApi
         Mailbox mailbox = new Mailbox(email, DateUtils.addMinutes(new Date(), getConfiguration().temporaryMailValidMinutes()).getTime(), forwardEnabled);
         try
         {
-            mailbox = createMailboxApiImpl().createMailbox(mailbox);
+            mailbox = getXCMailrClient().mailboxes().createMailbox(mailbox);
         }
         catch (Exception e)
         {
@@ -86,7 +92,7 @@ public class XcMailrApi
         List<Mailbox> mailboxes = null;
         try
         {
-            mailboxes = createMailboxApiImpl().listMailboxes();
+            mailboxes = getXCMailrClient().mailboxes().listMailboxes();
         }
         catch (Exception e)
         {
@@ -108,7 +114,7 @@ public class XcMailrApi
 
         try
         {
-            mailbox = createMailboxApiImpl().getMailbox(email);
+            mailbox = getXCMailrClient().mailboxes().getMailbox(email);
         }
         catch (Exception e)
         {
@@ -146,9 +152,9 @@ public class XcMailrApi
 
         try
         {
-            mailbox = createMailboxApiImpl().updateMailbox(address, newAddress == null ? oldMailbox.address : newAddress,
-                                                           minutesActive == null ? validMinutes : minutesActive,
-                                                           forwardEnabled == null ? oldMailbox.forwardEnabled : forwardEnabled);
+            mailbox = getXCMailrClient().mailboxes().updateMailbox(address, newAddress == null ? oldMailbox.address : newAddress,
+                                                                   minutesActive == null ? validMinutes : minutesActive,
+                                                                   forwardEnabled == null ? oldMailbox.forwardEnabled : forwardEnabled);
         }
         catch (Exception e)
         {
@@ -211,7 +217,7 @@ public class XcMailrApi
         {
             if (getMailbox(address) != null)
             {
-                createMailboxApiImpl().deleteMailbox(address);
+                getXCMailrClient().mailboxes().deleteMailbox(address);
             }
         }
         catch (Exception e)
@@ -346,7 +352,7 @@ public class XcMailrApi
         List<Mail> mails = null;
         try
         {
-            mails = createMailApiImpl().listMails(email, filters);
+            mails = getXCMailrClient().mails().listMails(email, filters);
         }
         catch (Exception e)
         {
