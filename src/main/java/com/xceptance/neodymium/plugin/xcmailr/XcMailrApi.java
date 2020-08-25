@@ -106,7 +106,7 @@ public class XcMailrApi
      * 
      * @param email
      *            e-mail address of the target mailbox
-     * @return @link Mailbox} object with the desired information
+     * @return {@link Mailbox} object with the desired information or null if not found
      */
     public static Mailbox getMailbox(String email)
     {
@@ -141,7 +141,7 @@ public class XcMailrApi
      *            period during which the temporary e-mail should be active
      * @param forwardEnabled
      *            boolean value if the received e-mails should be forwarded to an account owner e-mail
-     * @return @link Mailbox} object with information about updated mailbox
+     * @return {@link Mailbox} object with information about updated mailbox
      */
     public static Mailbox updateMailbox(final String address, final String newAddress, final Integer minutesActive,
                                         final Boolean forwardEnabled)
@@ -170,7 +170,7 @@ public class XcMailrApi
      *            current address of the mailbox
      * @param newAddress
      *            new mailbox address
-     * @return @link Mailbox} object with information about updated mailbox
+     * @return {@link Mailbox} object with information about updated mailbox
      */
     public static Mailbox updateMailboxEmailAddress(final String address, final String newAddress)
     {
@@ -182,13 +182,13 @@ public class XcMailrApi
      * 
      * @param address
      *            current address of the mailbox
-     * @param newAddress
-     *            new mailbox address
-     * @return @link Mailbox} object with information about updated mailbox
+     * @param newValidMinutes
+     *            new period until the mailbox is deactivated (in minutes)
+     * @return {@link Mailbox} object with information about updated mailbox
      */
-    public static Mailbox updateMailboxDeactivationTime(final String address, final int newValidMinutesNumber)
+    public static Mailbox updateMailboxDeactivationTime(final String address, final int newValidMinutes)
     {
-        return updateMailbox(address, null, newValidMinutesNumber, null);
+        return updateMailbox(address, null, newValidMinutes, null);
     }
 
     /**
@@ -196,9 +196,9 @@ public class XcMailrApi
      * 
      * @param address
      *            current address of the mailbox
-     * @param newAddress
-     *            new mailbox address
-     * @return @link Mailbox} object with information about updated mailbox
+     * @param forwardEnabled
+     *            new forwarding enabled state
+     * @return {@link Mailbox} object with information about updated mailbox
      */
     public static Mailbox updateMailboxForwarding(final String address, final boolean forwardEnabled)
     {
