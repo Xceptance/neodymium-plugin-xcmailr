@@ -1,5 +1,9 @@
 package com.xceptance.neodymium.plugin.xcmailr;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.http.HttpClient;
 import java.util.Collections;
 import java.util.Date;
@@ -223,6 +227,22 @@ public class XcMailrApi
         catch (Exception e)
         {
             throw new RuntimeException("Error while deleting the mailbox", e);
+        }
+    }
+
+    public static void fetchAttachment(Mail mail, String attachmentName, File file)
+    {
+        try
+        {
+            InputStream inputStream = getXCMailrClient().mails().openAttachment(mail.id, attachmentName);
+
+            OutputStream outputStream = new FileOutputStream(file);
+            outputStream.write(inputStream.readAllBytes());
+            outputStream.close();
+        }
+        catch (Exception e)
+        {
+            throw new RuntimeException("Error while fetching and saving an attachment", e);
         }
     }
 

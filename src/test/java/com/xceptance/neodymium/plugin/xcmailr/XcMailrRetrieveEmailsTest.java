@@ -5,14 +5,15 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
+import org.apache.commons.io.FileUtils;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.xceptance.neodymium.plugin.xcmailr.XcMailrApi;
 import com.xceptance.neodymium.plugin.xcmailr.data.EmailAccount;
 import com.xceptance.neodymium.plugin.xcmailr.util.SendEmail;
 
+import xcmailr.client.Attachment;
 import xcmailr.client.Mail;
 
 public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
@@ -42,6 +43,32 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     {
         Mail mail = XcMailrApi.retrieveLastEmailBySubject(emailUnderTest, subject);
         validateMessage(mail);
+    }
+
+    /**
+     * test that the method <code>XcMailrApi.retrieveLastEmailBySender</code> works correct</br>
+     * in other words, that it's possible to fetch last received e-mail with a specific sender
+     */
+    @Test
+    public void testRetrieveAttachmentFromLastEmail()
+    {
+        Mail mail = XcMailrApi.retrieveLastEmailBySender(emailUnderTest, emailAccount.getEmail());
+        validateMessage(mail);
+
+        Attachment attachment = mail.attachments.get(0);
+        String attachmentName = attachment.name;
+        File fileRecieved = new File("./target/attachmentTest-" + attachmentName);
+        fileRecieved.deleteOnExit();
+        XcMailrApi.fetchAttachment(mail, attachmentName, fileRecieved);
+        Assert.assertTrue(fileRecieved.exists());
+        try
+        {
+            Assert.assertTrue(FileUtils.contentEquals(fileToSend, fileRecieved));
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     /**
