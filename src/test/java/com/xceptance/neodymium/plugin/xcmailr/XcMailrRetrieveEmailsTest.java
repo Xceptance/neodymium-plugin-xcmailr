@@ -48,9 +48,11 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     /**
      * test that the method <code>XcMailrApi.retrieveLastEmailBySender</code> works correct</br>
      * in other words, that it's possible to fetch last received e-mail with a specific sender
+     * 
+     * @throws IOException
      */
     @Test
-    public void testRetrieveAttachmentFromLastEmail()
+    public void testRetrieveAttachmentFromLastEmail() throws IOException
     {
         Mail mail = XcMailrApi.retrieveLastEmailBySender(emailUnderTest, emailAccount.getEmail());
         validateMessage(mail);
@@ -61,14 +63,7 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
         fileRecieved.deleteOnExit();
         XcMailrApi.fetchAttachment(mail, attachmentName, fileRecieved);
         Assert.assertTrue(fileRecieved.exists());
-        try
-        {
-            Assert.assertTrue(FileUtils.contentEquals(fileToSend, fileRecieved));
-        }
-        catch (IOException e)
-        {
-            e.printStackTrace();
-        }
+        Assert.assertTrue(FileUtils.contentEquals(fileToSend, fileRecieved));
     }
 
     /**
