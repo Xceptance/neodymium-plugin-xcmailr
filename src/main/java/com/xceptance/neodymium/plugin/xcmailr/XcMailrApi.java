@@ -229,6 +229,16 @@ public class XcMailrApi
         }
     }
 
+    /**
+     * Fetch a specific mail attachment
+     * 
+     * @param mail
+     *            {@link Mail} the mail that contains the attachment that should be fetched
+     * @param attachmentName
+     *            {@link Mail} the name of the attachment that should be fetched
+     * @param file
+     *            {@link File} the file that specifies where the attachment should be saved
+     */
     public static void fetchAttachment(Mail mail, String attachmentName, File file)
     {
         try (InputStream inputStream = getXCMailrClient().mails().openAttachment(mail.id, attachmentName);
