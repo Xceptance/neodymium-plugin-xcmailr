@@ -54,15 +54,13 @@ public abstract class AbstractTest
 
     public static void writeMapToPropertiesFile(Map<String, String> map, File file)
     {
-        try
+        try (final FileOutputStream outputStream = new FileOutputStream(file);)
         {
             String propertiesString = map.keySet().stream()
                                          .map(key -> key + "=" + map.get(key))
                                          .collect(Collectors.joining("\r\n"));
 
-            final FileOutputStream outputStream = new FileOutputStream(file);
             outputStream.write(propertiesString.getBytes());
-            outputStream.close();
         }
         catch (final Exception e)
         {

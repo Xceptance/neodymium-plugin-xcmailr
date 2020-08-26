@@ -231,13 +231,10 @@ public class XcMailrApi
 
     public static void fetchAttachment(Mail mail, String attachmentName, File file)
     {
-        try
+        try (InputStream inputStream = getXCMailrClient().mails().openAttachment(mail.id, attachmentName);
+            OutputStream outputStream = new FileOutputStream(file);)
         {
-            InputStream inputStream = getXCMailrClient().mails().openAttachment(mail.id, attachmentName);
-
-            OutputStream outputStream = new FileOutputStream(file);
             outputStream.write(inputStream.readAllBytes());
-            outputStream.close();
         }
         catch (Exception e)
         {
