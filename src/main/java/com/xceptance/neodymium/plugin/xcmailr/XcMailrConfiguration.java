@@ -1,4 +1,4 @@
-package util.xcmailr;
+package com.xceptance.neodymium.plugin.xcmailr;
 
 import org.aeonbits.owner.Config.LoadPolicy;
 import org.aeonbits.owner.Config.LoadType;
@@ -7,14 +7,14 @@ import org.aeonbits.owner.Mutable;
 
 @LoadPolicy(LoadType.MERGE)
 @Sources(
-{
-  "${xcmailr.temporaryConfigFile}", "file:config/dev-xcmailr.properties", "file:config/xcmailr.properties"
-})
+    {
+        "${xcmailr.temporaryConfigFile}", "file:config/dev-xcmailr.properties", "file:config/xcmailr.properties"
+    })
 
 public interface XcMailrConfiguration extends Mutable
 {
     @Key("xcmailr.url")
-    @DefaultValue("https://xcmailr.xceptance.de")
+    @DefaultValue("https://xcmailr.xceptance.de/")
     public String url();
 
     @Key("xcmailr.apiToken")

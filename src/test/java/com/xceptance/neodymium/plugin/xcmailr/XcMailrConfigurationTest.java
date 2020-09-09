@@ -1,4 +1,4 @@
-package util.xcmailr;
+package com.xceptance.neodymium.plugin.xcmailr;
 
 import java.util.UUID;
 
@@ -12,9 +12,9 @@ public class XcMailrConfigurationTest extends AbstractTest
     public void testApiToken()
     {
         final String apiToken = UUID.randomUUID().toString().replaceAll("-", "");
-        properties2.put("xcmailr.apiToken", apiToken);
-        writeMapToPropertiesFile(properties2, tempConfigFile2);
-        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
+        properties.put("xcmailr.apiToken", apiToken);
+        writeMapToPropertiesFile(properties, temporaryConfigurationFile);
+        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + TEMPORARY_CONFIGURATION_FILE_LOCATION);
         Assert.assertEquals(apiToken, ConfigFactory.create(XcMailrConfiguration.class).apiToken());
     }
 
@@ -22,26 +22,21 @@ public class XcMailrConfigurationTest extends AbstractTest
     public void testUrl()
     {
         final String url = "https://www.xceptance.com/en/";
-        properties2.put("xcmailr.url", url);
-        writeMapToPropertiesFile(properties2, tempConfigFile2);
-        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
+        properties.put("xcmailr.url", url);
+        writeMapToPropertiesFile(properties, temporaryConfigurationFile);
+        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + TEMPORARY_CONFIGURATION_FILE_LOCATION);
         Assert.assertEquals(url, ConfigFactory.create(XcMailrConfiguration.class).url());
-    }
-
-    @Test
-    public void testUrlDefault()
-    {
-        Assert.assertEquals("https://xcmailr.xceptance.de", ConfigFactory.create(XcMailrConfiguration.class).url());
     }
 
     @Test
     public void testTemporaryMailValidMinutes()
     {
         final String temporaryMailValidMinutes = "100";
-        properties2.put("xcmailr.temporaryMailValidMinutes", temporaryMailValidMinutes);
-        writeMapToPropertiesFile(properties2, tempConfigFile2);
-        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
-        Assert.assertEquals(Integer.parseInt(temporaryMailValidMinutes), ConfigFactory.create(XcMailrConfiguration.class).temporaryMailValidMinutes());
+        properties.put("xcmailr.temporaryMailValidMinutes", temporaryMailValidMinutes);
+        writeMapToPropertiesFile(properties, temporaryConfigurationFile);
+        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + TEMPORARY_CONFIGURATION_FILE_LOCATION);
+        Assert.assertEquals(Integer.parseInt(temporaryMailValidMinutes),
+                            ConfigFactory.create(XcMailrConfiguration.class).temporaryMailValidMinutes());
     }
 
     @Test
@@ -54,9 +49,9 @@ public class XcMailrConfigurationTest extends AbstractTest
     public void testMaximumWaitingMinutes()
     {
         final String maximumWaitingMinutes = "5";
-        properties2.put("xcmailr.maximumWaitingMinutes", maximumWaitingMinutes);
-        writeMapToPropertiesFile(properties2, tempConfigFile2);
-        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
+        properties.put("xcmailr.maximumWaitingMinutes", maximumWaitingMinutes);
+        writeMapToPropertiesFile(properties, temporaryConfigurationFile);
+        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + TEMPORARY_CONFIGURATION_FILE_LOCATION);
         Assert.assertEquals(Integer.parseInt(maximumWaitingMinutes), ConfigFactory.create(XcMailrConfiguration.class).maximumWaitingTime());
     }
 
@@ -70,9 +65,9 @@ public class XcMailrConfigurationTest extends AbstractTest
     public void testPollingIntervalSeconds()
     {
         final String pollingIntervalSeconds = "15";
-        properties2.put("xcmailr.pollingIntervalSeconds", pollingIntervalSeconds);
-        writeMapToPropertiesFile(properties2, tempConfigFile2);
-        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + fileLocation);
+        properties.put("xcmailr.pollingIntervalSeconds", pollingIntervalSeconds);
+        writeMapToPropertiesFile(properties, temporaryConfigurationFile);
+        ConfigFactory.setProperty("xcmailr.temporaryConfigFile", "file:" + TEMPORARY_CONFIGURATION_FILE_LOCATION);
         Assert.assertEquals(Integer.parseInt(pollingIntervalSeconds), ConfigFactory.create(XcMailrConfiguration.class).pollingInterval());
     }
 
