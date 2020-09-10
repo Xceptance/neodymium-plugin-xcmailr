@@ -1,9 +1,10 @@
-name: Deployment
+name: Java CI
 
 on:
   push:
     branches:
-      - master
+      - develop
+      - tests-for-fetch-emails
 
 jobs:
   build:
@@ -16,11 +17,7 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
-    - name: Customize Maven repo settings
-      run: cp .github/workflows/settings.xml ~/.m2
-    - name: Install GPG key  
-      run: echo "${{ secrets.GPG_KEY }}" | gpg --batch --import
-    - name: Deploy
+    - name: run basic tests
       env:
         OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
         OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
@@ -32,4 +29,4 @@ jobs:
         SMTP_SERVER_EMAIL: ${{ secrets.SMTP_SERVER_EMAIL }}
         SMTP_SERVER_HOST: ${{ secrets.SMTP_SERVER_HOST}}
         XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
-      run: mvn clean compile package deploy -C -P release
+      run: mvn -B clean test
