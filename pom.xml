@@ -11,6 +11,9 @@
 
 	<name>neodymium-plugin-xcmailr</name>
 	<url>https://github.com/Xceptance/neodymium-plugin-xcmailr</url>
+	<description>Plugin for neodymium libarary to make the communication with the XcMailr via API easier.</description>
+
+
 	<organization>
 		<name>Xceptance Software Technologies</name>
 		<url>https://www.xceptance.com/</url>
@@ -47,9 +50,9 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git://github.com/Xceptance/neodymium-library.git</connection>
-		<developerConnection>scm:git:ssh://github.com/Xceptance/neodymium-library.git</developerConnection>
-		<url>https://github.com/Xceptance/neodymium-library/tree/master</url>
+		<connection>scm:git:git://github.com/Xceptance/neodymium-plugin-xcmailr.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Xceptance/neodymium-plugin-xcmailr.git</developerConnection>
+		<url>https://github.com/Xceptance/neodymium-plugin-xcmailr/tree/master</url>
 	</scm>
 
 	<distributionManagement>
