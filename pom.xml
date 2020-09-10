@@ -16,6 +16,28 @@
 		<url>https://www.xceptance.com/</url>
 	</organization>
 
+	<developers>
+		<developer>
+			<name>Marcel Pfotenhauer</name>
+			<email>neodymium@xceptance.com</email>
+			<organization>Xceptance Software Technologies GmbH</organization>
+			<organizationUrl>https://www.xceptance.com</organizationUrl>
+			<roles>
+				<role>architect</role>
+				<role>developer</role>
+			</roles>
+		</developer>
+		<developer>
+			<name>Olha Omelianchuk</name>
+			<email>neodymium@xceptance.com</email>
+			<organization>Xceptance Software Technologies GmbH</organization>
+			<organizationUrl>https://www.xceptance.com</organizationUrl>
+			<roles>
+				<role>developer</role>
+			</roles>
+		</developer>
+	</developers>
+
 	<licenses>
 		<license>
 			<name>MIT</name>
@@ -23,6 +45,12 @@
 			<distribution>repo</distribution>
 		</license>
 	</licenses>
+
+	<scm>
+		<connection>scm:git:git://github.com/Xceptance/neodymium-library.git</connection>
+		<developerConnection>scm:git:ssh://github.com/Xceptance/neodymium-library.git</developerConnection>
+		<url>https://github.com/Xceptance/neodymium-library/tree/master</url>
+	</scm>
 
 	<distributionManagement>
 		<snapshotRepository>
@@ -101,9 +129,6 @@
 	<profiles>
 		<profile>
 			<id>basic</id>
-			<activation>
-				<activeByDefault>true</activeByDefault>
-			</activation>
 			<build>
 				<plugins>
 					<plugin>
@@ -121,96 +146,97 @@
 			</build>
 		</profile>
 		<profile>
-				<id>release</id>
-				<activation>
-					<property>
-						<name>signArtifacts</name>
-						<value>true</value>
-					</property>
-				</activation>
-				<build>
-					<plugins>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-surefire-plugin</artifactId>
-							<configuration>
-								<forkCount>1</forkCount>
-							</configuration>
-						</plugin>
-						<plugin>
-							<groupId>org.apache.maven.plugins</groupId>
-							<artifactId>maven-gpg-plugin</artifactId>
-							<version>1.6</version>
-							<configuration>
-								<gpgArguments>
-									<arg>--pinentry-mode</arg>
-									<arg>loopback</arg>
-								</gpgArguments>
-							</configuration>
-							<executions>
-								<execution>
-									<id>sign-artifacts</id>
-									<phase>verify</phase>
-									<goals>
-										<goal>sign</goal>
-									</goals>
-								</execution>
-							</executions>
-						</plugin>
-					</plugins>
-				</build>
-			</profile>
-		</profiles>
-		
-		<dependencies>
-			<dependency>
-				<groupId>com.xceptance</groupId>
-				<artifactId>xcmailr-client</artifactId>
-				<version>2.2.0</version>
-			</dependency>
-			<dependency>
-				<groupId>org.aeonbits.owner</groupId>
-				<artifactId>owner</artifactId>
-				<version>1.0.12</version>
-			</dependency>
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>1.7.30</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.commons</groupId>
-				<artifactId>commons-lang3</artifactId>
-				<version>3.11</version>
-			</dependency>
-			<!-- Test dependencies -->
-			<dependency>
-				<groupId>junit</groupId>
-				<artifactId>junit</artifactId>
-				<version>4.13</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>com.sun.mail</groupId>
-				<artifactId>javax.mail</artifactId>
-				<version>1.6.2</version>
-				<scope>test</scope>
-			</dependency>
-			<dependency>
-				<groupId>commons-io</groupId>
-				<artifactId>commons-io</artifactId>
-				<version>2.5</version>
-				<scope>test</scope>
-			</dependency>
-		</dependencies>
+			<id>release</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+				<property>
+					<name>signArtifacts</name>
+					<value>true</value>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-surefire-plugin</artifactId>
+						<configuration>
+							<forkCount>1</forkCount>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>1.6</version>
+						<configuration>
+							<gpgArguments>
+								<arg>--pinentry-mode</arg>
+								<arg>loopback</arg>
+							</gpgArguments>
+						</configuration>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 
-		<reporting>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-report-plugin</artifactId>
-					<version>${surefire.version}</version>
-				</plugin>
-			</plugins>
-		</reporting>
+	<dependencies>
+		<dependency>
+			<groupId>com.xceptance</groupId>
+			<artifactId>xcmailr-client</artifactId>
+			<version>2.2.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.aeonbits.owner</groupId>
+			<artifactId>owner</artifactId>
+			<version>1.0.12</version>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<version>1.7.30</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-lang3</artifactId>
+			<version>3.11</version>
+		</dependency>
+		<!-- Test dependencies -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.sun.mail</groupId>
+			<artifactId>javax.mail</artifactId>
+			<version>1.6.2</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>commons-io</groupId>
+			<artifactId>commons-io</artifactId>
+			<version>2.5</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<reporting>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-report-plugin</artifactId>
+				<version>${surefire.version}</version>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>
