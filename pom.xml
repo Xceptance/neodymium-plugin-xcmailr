@@ -132,6 +132,9 @@
 	<profiles>
 		<profile>
 			<id>basic</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
@@ -151,7 +154,6 @@
 		<profile>
 			<id>release</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
 				<property>
 					<name>signArtifacts</name>
 					<value>true</value>
