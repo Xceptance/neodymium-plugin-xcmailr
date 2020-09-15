@@ -132,6 +132,9 @@
 	<profiles>
 		<profile>
 			<id>basic</id>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
 			<build>
 				<plugins>
 					<plugin>
@@ -151,7 +154,6 @@
 		<profile>
 			<id>release</id>
 			<activation>
-				<activeByDefault>true</activeByDefault>
 				<property>
 					<name>signArtifacts</name>
 					<value>true</value>
@@ -183,10 +185,6 @@
 								<goals>
 									<goal>sign</goal>
 								</goals>
-								<configuration>
-									<keyname>${gpg.keyname}</keyname>
-									<passphraseServerId>${gpg.keyname}</passphraseServerId>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>
