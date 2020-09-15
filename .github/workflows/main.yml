@@ -21,7 +21,7 @@ jobs:
           server-id: ossrh
           server-username: OSSRH_USERNAME
           server-password: OSSRH_PASSWORD
-          server-gpg-passphrase: GPG_PASSPHRASE
+          gpg-passphrase: GPG_PASSPHRASE
     - name: Install GPG key  
       run: echo "${{ secrets.GPG_KEY }}" | gpg --batch --import
     - name: Deploy
