@@ -36,10 +36,5 @@ jobs:
         SMTP_SERVER_EMAIL: ${{ secrets.SMTP_SERVER_EMAIL }}
         SMTP_SERVER_HOST: ${{ secrets.SMTP_SERVER_HOST}}
         XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
-      run: |
-        mvn \
-          --no-transfer-progress \
-          --batch-mode \
-          -Dgpg.passphrase=${{ secrets.GPG_KEY }} \
-          clean -P release deploy
+      run: mvn clean compile package deploy -C -P release
 
