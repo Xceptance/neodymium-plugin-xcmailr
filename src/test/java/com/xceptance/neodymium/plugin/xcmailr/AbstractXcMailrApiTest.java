@@ -33,6 +33,7 @@ public abstract class AbstractXcMailrApiTest extends AbstractTest
             properties.put("xcmailr.apiToken", apiToken);
         }
         properties.put("xcmailr.temporaryMailValidMinutes", VALID_MINUTES);
+        properties.put("xcmailr.maximumWaitingMinutes", "2");
 
         savePropertiesAndApply();
     }

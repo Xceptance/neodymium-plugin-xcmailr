@@ -276,7 +276,8 @@ public class XcMailrApi
      */
     public static Mail retrieveLastEmailBySubject(String email, String subject)
     {
-        return fetchEmails(email, null, subject, null, null, null, true).get(0);
+        List<Mail> mails = fetchEmails(email, null, subject, null, null, null, true);
+        return mails != null ? mails.get(0) : null;
     }
 
     /**
@@ -290,7 +291,8 @@ public class XcMailrApi
      */
     public static Mail retrieveLastEmailBySender(String email, String sender)
     {
-        return fetchEmails(email, sender, null, null, null, null, true).get(0);
+        List<Mail> mails = fetchEmails(email, sender, null, null, null, null, true);
+        return mails != null ? mails.get(0) : null;
     }
 
     /**
