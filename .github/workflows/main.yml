@@ -16,7 +16,6 @@ jobs:
       with:
         java-version: 11
     - name: run basic tests
-          java-version: 11
           server-id: ossrh
           server-username: OSSRH_USERNAME
           server-password: OSSRH_PASSWORD
