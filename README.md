@@ -5,9 +5,8 @@
 ```xml
 	<repositories>
 		<repository>
-			<id>xceptance-public-repository</id>
-			<url>https://oss.sonatype.org/content/repositories/snapshots
-			</url>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
 		</repository>
 	</repositories>
 ```
@@ -16,7 +15,7 @@
         <dependency>
            <groupId>com.xceptance</groupId>
            <artifactId>neodymium-plugin-xcmailr</artifactId>
-           <version>0.0.1-SNAPSHOT</version>
+           <version>1.0.0</version>
         </dependency>
 ```
 To get to know, how to use this plugin, please read the [wiki](https://github.com/Xceptance/neodymium-library/Xcmailr-Plugin)
