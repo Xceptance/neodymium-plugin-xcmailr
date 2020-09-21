@@ -20,4 +20,4 @@ jobs:
         server-password: OSSRH_PASSWORD
         gpg-passphrase: GPG_PASSPHRASE
     - name: run basic tests
-      run: mvn -B clean compile test
+      run: mvn -B clean compile test -D-Dxcmailr.apiToken=XCMAILR_TOKEN -Dxcmailr.url=XCMAILR_URL
