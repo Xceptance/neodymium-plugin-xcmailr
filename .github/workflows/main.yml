@@ -15,9 +15,9 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 11
+        server-id: ossrh
+        server-username: OSSRH_USERNAME
+        server-password: OSSRH_PASSWORD
+        gpg-passphrase: GPG_PASSPHRASE
     - name: run basic tests
-          server-id: ossrh
-          server-username: OSSRH_USERNAME
-          server-password: OSSRH_PASSWORD
-          gpg-passphrase: GPG_PASSPHRASE
-      run: mvn -B clean compile test
+      run: mvn -B clean compile test -D-Dxcmailr.apiToken=XCMAILR_TOKEN -Dxcmailr.url=XCMAILR_URL
