@@ -20,4 +20,10 @@ jobs:
         server-password: OSSRH_PASSWORD
         gpg-passphrase: GPG_PASSPHRASE
     - name: run basic tests
+      env:
+        SMTP_SERVER_PASSWORD: ${{ secrets.SMTP_SERVER_PASSWORD }}
+        SMTP_SERVER_LOGIN: ${{ secrets.SMTP_SERVER_LOGIN }}
+        SMTP_SERVER_EMAIL: ${{ secrets.SMTP_SERVER_EMAIL }}
+        SMTP_SERVER_HOST: ${{ secrets.SMTP_SERVER_HOST}}
+        SMTP_SERVER_PORT: 25
       run: mvn -B clean compile test -Dxcmailr.apiToken=${{ secrets.XCMAILR_TOKEN }} -Dxcmailr.url=${{ secrets.XCMAILR_URL }}
