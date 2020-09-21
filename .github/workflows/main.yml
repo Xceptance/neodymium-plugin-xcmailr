@@ -1,40 +1,29 @@
-name: Deployment
+name: Java CI
 
 on:
   push:
     branches:
-      - master
-
+      - develop
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
     - name: Check out source files
       uses: actions/checkout@v2
-
     - name: Set up JDK 11 and Maven repository
       uses: actions/setup-java@v1
       with:
-          java-version: 11
-          server-id: ossrh
-          server-username: OSSRH_USERNAME
-          server-password: OSSRH_PASSWORD
-          gpg-passphrase: GPG_PASSPHRASE
-    - name: Install GPG key  
-      run: echo "${{ secrets.GPG_KEY }}" | gpg --batch --import
-    - name: Deploy
+        java-version: 11
+        server-id: ossrh
+        server-username: OSSRH_USERNAME
+        server-password: OSSRH_PASSWORD
+        gpg-passphrase: GPG_PASSPHRASE
+    - name: run basic tests
       env:
-        OSSRH_USERNAME: ${{ secrets.OSSRH_USERNAME }}
-        OSSRH_PASSWORD: ${{ secrets.OSSRH_PASSWORD }}
-        GPG_PASSPHRASE: ${{ secrets.GPG_PASSPHRASE }}
-        XCMAILR_EMAIL: ${{ secrets.XCMAILR_EMAIL }}
-        XCMAILR_PASSWORD: ${{ secrets.XCMAILR_PASSWORD }}
         SMTP_SERVER_PASSWORD: ${{ secrets.SMTP_SERVER_PASSWORD }}
         SMTP_SERVER_LOGIN: ${{ secrets.SMTP_SERVER_LOGIN }}
         SMTP_SERVER_EMAIL: ${{ secrets.SMTP_SERVER_EMAIL }}
         SMTP_SERVER_HOST: ${{ secrets.SMTP_SERVER_HOST}}
-        XCMAILR_TOKEN: ${{ secrets.XCMAILR_TOKEN }}
-      run: mvn clean compile package deploy -C -P release
-
+        SMTP_SERVER_PORT: 25
+      run: mvn -B clean compile test -Dxcmailr.apiToken=${{ secrets.XCMAILR_TOKEN }} -Dxcmailr.url=${{ secrets.XCMAILR_URL }}

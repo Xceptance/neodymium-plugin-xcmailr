@@ -45,6 +45,13 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
         validateMessage(mail);
     }
 
+    @Test
+    public void testRetrieveLastEmailBySubjectExpectNull()
+    {
+        Mail mail = XcMailrApi.retrieveLastEmailBySubject(emailUnderTest, "YouCantFindMe");
+        Assert.assertNull(mail);
+    }
+
     /**
      * test that the method <code>XcMailrApi.retrieveLastEmailBySender</code> works correct</br>
      * in other words, that it's possible to fetch last received e-mail with a specific sender
@@ -75,6 +82,13 @@ public class XcMailrRetrieveEmailsTest extends AbstractXcMailrApiTest
     {
         Mail mail = XcMailrApi.retrieveLastEmailBySender(emailUnderTest, emailAccount.getEmail());
         validateMessage(mail);
+    }
+
+    @Test
+    public void testRetrieveLastEmailBySendertExpectNull()
+    {
+        Mail mail = XcMailrApi.retrieveLastEmailBySubject(emailUnderTest, "YouCantFindMe");
+        Assert.assertNull(mail);
     }
 
     /**

@@ -7,14 +7,16 @@ import org.aeonbits.owner.Mutable;
 
 @LoadPolicy(LoadType.MERGE)
 @Sources(
-    {
-        "${xcmailr.temporaryConfigFile}", "file:config/dev-xcmailr.properties", "file:config/xcmailr.properties"
-    })
-
+{
+  "${xcmailr.temporaryConfigFile}",
+  "system:env",
+  "system:properties",
+  "file:config/dev-xcmailr.properties",
+  "file:config/xcmailr.properties"
+})
 public interface XcMailrConfiguration extends Mutable
 {
     @Key("xcmailr.url")
-    @DefaultValue("https://xcmailr.xceptance.de/")
     public String url();
 
     @Key("xcmailr.apiToken")
