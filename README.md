@@ -9,4 +9,4 @@ Add the following dependency to your `pom.xml`
            <version>1.1.0</version>
         </dependency>
 ```
-To get to know, how to use this plugin, please read the [wiki](https://github.com/Xceptance/neodymium-library/Xcmailr-Plugin)
+To get to know, how to use this plugin, please read the [wiki](https://github.com/Xceptance/neodymium-library/wiki/Xcmailr-Plugin)
