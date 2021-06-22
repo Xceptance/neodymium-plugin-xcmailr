@@ -12,6 +12,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import java.util.stream.Collectors;
 
 import org.aeonbits.owner.ConfigFactory;
 import org.apache.commons.lang3.StringUtils;
@@ -74,7 +75,8 @@ public class XcMailrApi
      */
     public static Mailbox createTemporaryEmail(String email, boolean forwardEnabled)
     {
-        Mailbox mailbox = new Mailbox(email, DateUtils.addMinutes(new Date(), getConfiguration().temporaryMailValidMinutes()).getTime(), forwardEnabled);
+        Mailbox mailbox = new Mailbox(email, DateUtils.addMinutes(new Date(), getConfiguration().temporaryMailValidMinutes()).getTime(),
+                                      forwardEnabled);
         try
         {
             mailbox = getXCMailrClient().mailboxes().createMailbox(mailbox);
@@ -147,7 +149,8 @@ public class XcMailrApi
      *            boolean value if the received e-mails should be forwarded to an account owner e-mail
      * @return {@link Mailbox} object with information about updated mailbox
      */
-    public static Mailbox updateMailbox(final String address, final String newAddress, final Integer minutesActive, final Boolean forwardEnabled)
+    public static Mailbox updateMailbox(final String address, final String newAddress, final Integer minutesActive,
+                                        final Boolean forwardEnabled)
     {
         Mailbox oldMailbox = getMailbox(address);
         int validMinutes = (int) Math.round((new Date(oldMailbox.deactivationTime).getTime() - new Date().getTime() * 1.0) / 60000);
@@ -242,7 +245,7 @@ public class XcMailrApi
     public static void fetchAttachment(Mail mail, String attachmentName, File file)
     {
         try (InputStream inputStream = getXCMailrClient().mails().openAttachment(mail.id, attachmentName);
-            OutputStream outputStream = new FileOutputStream(file);)
+             OutputStream outputStream = new FileOutputStream(file);)
         {
             outputStream.write(inputStream.readAllBytes());
         }
@@ -262,7 +265,7 @@ public class XcMailrApi
      */
     public static List<Mail> retrieveAllMailsFromMailbox(String mailboxAddress)
     {
-        return fetchEmails(mailboxAddress, null, null, null, null, null, false);
+        return fetchEmails(mailboxAddress, null, null, null, null, null, false, null);
     }
 
     /**
@@ -276,7 +279,7 @@ public class XcMailrApi
      */
     public static Mail retrieveLastEmailBySubject(String email, String subject)
     {
-        List<Mail> mails = fetchEmails(email, null, subject, null, null, null, true);
+        List<Mail> mails = fetchEmails(email, null, subject, null, null, null, true, null);
         return mails != null ? mails.get(0) : null;
     }
 
@@ -291,8 +294,14 @@ public class XcMailrApi
      */
     public static Mail retrieveLastEmailBySender(String email, String sender)
     {
-        List<Mail> mails = fetchEmails(email, sender, null, null, null, null, true);
+        List<Mail> mails = fetchEmails(email, sender, null, null, null, null, true, null);
         return mails != null ? mails.get(0) : null;
+    }
+
+    public static Date getTimestampOfLastEmail(String email)
+    {
+        var emails = fetchEmailsFromRemote(email, null, null, null, null, null, false, null);
+        return emails != null && emails.size() > 0 ? new Date(emails.get(emails.size() - 1).receivedTime) : new Date();
     }
 
     /**
@@ -314,7 +323,8 @@ public class XcMailrApi
      *            a boolean indicating whether only the last e-mail or more should be returned.
      * @return the retrieved {@link List} of {@link Mail} objects
      */
-    public static List<Mail> fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String headers, boolean lastMatch)
+    public static List<Mail> fetchEmails(String email, String from, String subject, String textContent, String htmlContent, String headers,
+                                         boolean lastMatch, Date lastestEmailDate)
     {
         assertPatternIsValid(from);
         assertPatternIsValid(subject);
@@ -331,7 +341,7 @@ public class XcMailrApi
                 LOGGER.warn("No e-mail retrieved while polling.");
                 return null;
             }
-            List<Mail> mails = fetchEmailsFromRemote(email, from, subject, textContent, htmlContent, headers, lastMatch);
+            List<Mail> mails = fetchEmailsFromRemote(email, from, subject, textContent, htmlContent, headers, lastMatch, lastestEmailDate);
             if (mails != null && !mails.isEmpty())
             {
                 return mails;
@@ -350,8 +360,8 @@ public class XcMailrApi
         }
     }
 
-    private static List<Mail> fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent, String headers,
-                                                    boolean lastMatch)
+    private static List<Mail> fetchEmailsFromRemote(String email, String from, String subject, String textContent, String htmlContent,
+                                                    String headers, boolean lastMatch, Date lastestEmailDate)
     {
         MailFilterOptions filters = new MailFilterOptions();
 
@@ -380,6 +390,10 @@ public class XcMailrApi
         try
         {
             mails = getXCMailrClient().mails().listMails(email, filters);
+            if (lastestEmailDate != null)
+            {
+                mails = mails.stream().filter(mail -> new Date(mail.receivedTime).after(lastestEmailDate)).collect(Collectors.toList());
+            }
         }
         catch (Exception e)
         {
