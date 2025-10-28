@@ -41,9 +41,7 @@ public class SendEmail
         smtpProps.setProperty("mail.smtp.ssl.enable", Boolean.toString(emailAccount.isSsl()));
         smtpProps.setProperty("mail.smtp.tls.enable", Boolean.toString(emailAccount.isTls()));
         smtpProps.put("mail.smtp.host", emailAccount.getServer());
-        // smtpProps.put("mail.smtp.auth", Boolean.toString(emailAccount.getPassword() != null));
         smtpProps.put("mail.smtp.port", emailAccount.getPort());
-        // smtpProps.setProperty("mail.user", emailAccount.getLogin());
 
         // create session
         final Session session;
